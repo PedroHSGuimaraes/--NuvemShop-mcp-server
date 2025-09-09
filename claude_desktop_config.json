@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "tiendanube": {
+      "command": "npx",
+      "args": ["tiendanube-mcp-server"],
+      "env": {
+        "TIENDANUBE_ACCESS_TOKEN": "seu_token_aqui",
+        "TIENDANUBE_STORE_ID": "seu_store_id_aqui"
+      }
+    }
+  }
+}
