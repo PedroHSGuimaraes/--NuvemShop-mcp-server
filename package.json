@@ -1,11 +1,12 @@
 {
   "name": "tiendanube-mcp-server",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "Model Context Protocol server for Tienda Nube API integration",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "tiendanube-mcp-server": "./start-mcp.js"
+    "tiendanube-mcp-server": "./dist/index.js",
+    "tiendanube-mcp-http": "./dist/http-server.js"
   },
   "files": [
     "dist/**/*",
@@ -17,6 +18,7 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "start:http": "node dist/http-server.js",
     "prepublishOnly": "npm run build",
     "test": "node test-server.js",
     "lint": "eslint src/**/*.ts",

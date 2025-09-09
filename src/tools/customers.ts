@@ -17,7 +17,7 @@ export const customerTools: Tool[] = [
   {
     name: "tiendanube_list_customers",
     description:
-      "List all customers in the store with optional pagination and filtering by creation/update dates and search queries.",
+      "👥 LIST ALL CUSTOMERS - Retrieve a paginated list of store customers with filtering and search capabilities. Use this for customer management, analytics, segmentation, and finding specific customers. Supports filtering by creation/update dates, text search by name/email/identification, and pagination for large customer bases. Returns customer profiles with contact info, spending totals, and order history.",
     inputSchema: {
       type: "object",
       properties: {
@@ -66,7 +66,7 @@ export const customerTools: Tool[] = [
   {
     name: "tiendanube_get_customer",
     description:
-      "Get detailed information about a specific customer by ID, including contact information, addresses, and order history.",
+      "🔍 GET SPECIFIC CUSTOMER - Retrieve complete details for a single customer by their unique ID. Use this when you need comprehensive customer information including personal details, contact info, billing/shipping addresses, total spent, last order, account status, and custom extra fields. Essential for customer service, account management, and personalized marketing.",
     inputSchema: {
       type: "object",
       properties: {
@@ -85,7 +85,7 @@ export const customerTools: Tool[] = [
   {
     name: "tiendanube_create_customer",
     description:
-      "Create a new customer in the store. Requires name and email at minimum. Can include phone, identification, notes, and address information.",
+      "➕ CREATE NEW CUSTOMER - Create a new customer account with complete profile information. Use this for customer registration, manual account creation, bulk imports, or integrating with external systems. Requires name and email as minimum fields. Supports phone, identification documents, addresses, notes, passwords, and email invitation sending. Ideal for onboarding and customer management.",
     inputSchema: {
       type: "object",
       properties: {
@@ -144,7 +144,7 @@ export const customerTools: Tool[] = [
   {
     name: "tiendanube_update_customer",
     description:
-      "Update an existing customer. All fields are optional except customer_id. Only provided fields will be updated.",
+      "✏️ UPDATE CUSTOMER - Modify existing customer information including personal details, contact information, and internal notes. Use this for customer profile updates, data corrections, preference changes, and maintaining accurate customer records. All fields are optional except customer_id - only provided fields will be updated, preserving existing data.",
     inputSchema: {
       type: "object",
       properties: {
@@ -176,25 +176,11 @@ export const customerTools: Tool[] = [
       required: ["customer_id"],
     },
   },
-  {
-    name: "tiendanube_delete_customer",
-    description:
-      "Permanently delete a customer from the store. This action cannot be undone and will remove all customer data.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        customer_id: {
-          type: "number",
-          description: "The unique ID of the customer to delete",
-        },
-      },
-      required: ["customer_id"],
-    },
-  },
+  // Delete customer tool disabled by policy
   {
     name: "tiendanube_search_customers",
     description:
-      "Search for customers using a text query. Searches in customer names and email addresses with pagination support.",
+      "🔎 SEARCH CUSTOMERS - Find customers using text search across names, emails, and identification numbers. Use this for quick customer lookup, support queries, order assignment, and customer service scenarios. Supports pagination for large result sets. More flexible than listing with specific filters when you need fuzzy matching or don't know exact customer details.",
     inputSchema: {
       type: "object",
       properties: {
@@ -300,11 +286,10 @@ export async function handleCustomerTool(
       }
 
       case "tiendanube_delete_customer": {
-        const validatedArgs = DeleteCustomerSchema.parse(args);
-        await client.delete(`/customers/${validatedArgs.customer_id}`);
         return {
-          success: true,
-          message: `Customer ${validatedArgs.customer_id} deleted successfully`,
+          success: false,
+          error: "Delete operations are disabled by policy",
+          type: "CustomerError",
         };
       }
 

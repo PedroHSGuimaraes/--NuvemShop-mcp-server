@@ -21,7 +21,7 @@ export const categoryTools: Tool[] = [
   {
     name: "tiendanube_list_categories",
     description:
-      "List all product categories in the store with optional filtering by parent category, search query, and creation/update dates.",
+      "📂 LIST ALL CATEGORIES - Retrieve a hierarchical list of product categories with filtering and localization support. Use this for catalog management, navigation setup, category analytics, and organizing products. Supports filtering by parent category, text search, date ranges, and multi-language content. Returns category tree structure with names, descriptions, and product counts.",
     inputSchema: {
       type: "object",
       properties: {
@@ -80,7 +80,7 @@ export const categoryTools: Tool[] = [
   {
     name: "tiendanube_get_category",
     description:
-      "Get detailed information about a specific category by ID, including name, description, parent category, and subcategories.",
+      "🔍 GET SPECIFIC CATEGORY - Retrieve complete details for a single product category by its unique ID. Use this when you need comprehensive category information including localized names, descriptions, SEO metadata, parent-child relationships, subcategories, and product associations. Essential for category management, SEO optimization, and catalog organization.",
     inputSchema: {
       type: "object",
       properties: {
@@ -105,7 +105,7 @@ export const categoryTools: Tool[] = [
   {
     name: "tiendanube_create_category",
     description:
-      "Create a new product category. Supports multiple languages, parent-child relationships, and Google Shopping integration.",
+      "➕ CREATE NEW CATEGORY - Create a new product category with multi-language support and hierarchical organization. Use this for expanding catalog structure, organizing products, improving navigation, and setting up category-based promotions. Supports parent-child relationships for subcategories, localized names/descriptions, and Google Shopping integration for enhanced marketing.",
     inputSchema: {
       type: "object",
       properties: {
@@ -148,7 +148,7 @@ export const categoryTools: Tool[] = [
   {
     name: "tiendanube_update_category",
     description:
-      "Update an existing category. All fields are optional except category_id. Only provided fields will be updated.",
+      "✏️ UPDATE CATEGORY - Modify existing category information including names, descriptions, and hierarchy relationships. Use this for category management, localization updates, SEO improvements, and reorganizing catalog structure. Supports multi-language content updates and parent category changes. Only provided fields will be updated, preserving existing data.",
     inputSchema: {
       type: "object",
       properties: {
@@ -195,7 +195,7 @@ export const categoryTools: Tool[] = [
   {
     name: "tiendanube_delete_category",
     description:
-      "Permanently delete a category. Products in this category will be moved to the parent category or become uncategorized.",
+      "🗑️ DELETE CATEGORY - Permanently remove a product category from the store catalog. ⚠️ WARNING: Products in this category will be automatically moved to the parent category or become uncategorized. Use this for catalog cleanup, removing obsolete categories, or restructuring product organization. Consider the impact on navigation and product findability before deletion.",
     inputSchema: {
       type: "object",
       properties: {
@@ -213,7 +213,7 @@ export const couponTools: Tool[] = [
   {
     name: "tiendanube_list_coupons",
     description:
-      "List all discount coupons in the store with optional filtering by code, type, validity, and creation/update dates.",
+      "🎫 LIST ALL COUPONS - Retrieve a comprehensive list of discount coupons with advanced filtering options. Use this for promotional campaign management, coupon analytics, expired coupon cleanup, and marketing strategy analysis. Supports filtering by code, discount type (percentage/fixed), validity status, date ranges, and usage statistics. Essential for e-commerce marketing and sales optimization.",
     inputSchema: {
       type: "object",
       properties: {
@@ -271,7 +271,7 @@ export const couponTools: Tool[] = [
   {
     name: "tiendanube_get_coupon",
     description:
-      "Get detailed information about a specific coupon by ID, including discount value, usage limits, and validity period.",
+      "🔍 GET SPECIFIC COUPON - Retrieve complete details for a single discount coupon by its unique ID. Use this when you need comprehensive coupon information including discount value, type, usage statistics, validity period, restrictions, and performance metrics. Essential for coupon management, customer support queries, and promotional analysis.",
     inputSchema: {
       type: "object",
       properties: {
@@ -290,7 +290,7 @@ export const couponTools: Tool[] = [
   {
     name: "tiendanube_create_coupon",
     description:
-      "Create a new discount coupon. Can be percentage-based or fixed amount, with optional usage limits, validity period, and product/category restrictions.",
+      "➕ CREATE NEW COUPON - Create promotional discount coupons for marketing campaigns and customer incentives. Use this for launching sales, customer retention, first-time buyer discounts, and seasonal promotions. Supports percentage or fixed amount discounts, usage limits, validity periods, minimum order values, and product/category restrictions. Powerful tool for driving sales and customer engagement.",
     inputSchema: {
       type: "object",
       properties: {
@@ -349,7 +349,7 @@ export const couponTools: Tool[] = [
   {
     name: "tiendanube_update_coupon",
     description:
-      "Update an existing coupon. All fields are optional except coupon_id. Only provided fields will be updated.",
+      "✏️ UPDATE COUPON - Modify existing discount coupon settings including discount value, validity period, usage limits, and restrictions. Use this for adjusting promotional campaigns, extending coupon validity, changing discount amounts, updating usage limits, and managing coupon lifecycle. Essential for dynamic marketing strategies and campaign optimization.",
     inputSchema: {
       type: "object",
       properties: {
@@ -412,7 +412,7 @@ export const couponTools: Tool[] = [
   {
     name: "tiendanube_delete_coupon",
     description:
-      "Permanently delete a coupon. This action cannot be undone and will invalidate any pending uses of the coupon.",
+      "🗑️ DELETE COUPON - Permanently remove a discount coupon from the store. ⚠️ WARNING: This action is irreversible and will immediately invalidate the coupon for all customers, including those who may already have it saved. Use this for cleaning up expired promotions, removing unused coupons, or terminating problematic discount codes. Consider deactivating instead of deleting if usage tracking is important.",
     inputSchema: {
       type: "object",
       properties: {

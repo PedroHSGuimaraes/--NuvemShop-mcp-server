@@ -30,7 +30,7 @@ import {
  *
  * This server provides Model Context Protocol (MCP) tools for interacting with the Tienda Nube API.
  * It supports comprehensive e-commerce operations including:
- * - Authentication and store information
+ * - Store information retrieval
  * - Product management (create, read, update, delete, search)
  * - Order management (create, read, update, cancel, fulfillment)
  * - Customer management (create, read, update, delete, search)
@@ -44,12 +44,11 @@ import {
  * - Multi-language support (Spanish, Portuguese, English)
  * - Comprehensive error handling and validation
  * - Rate limiting and retry logic
- * - OAuth 2.0 authentication support
+ * - Automatic authentication via environment variables
  *
  * Setup:
- * 1. Get your API credentials from Tienda Nube
- * 2. Use tiendanube_authenticate to set up your access token and store ID
- * 3. Start using any of the 35+ available tools
+ * 1. Set TIENDANUBE_ACCESS_TOKEN and TIENDANUBE_STORE_ID environment variables
+ * 2. Start using any of the 35+ available tools
  */
 
 class TiendaNubeMCPServer {
@@ -59,7 +58,7 @@ class TiendaNubeMCPServer {
   constructor() {
     this.server = new Server({
       name: "tiendanube-mcp-server",
-      version: "1.0.0",
+      version: "1.5.0",
     });
 
     // Read credentials from environment variables
@@ -78,7 +77,7 @@ class TiendaNubeMCPServer {
       );
     } else {
       console.log(
-        "⚠️  TiendaNube credentials not found in environment. Use tiendanube_authenticate tool to set them."
+        "❌ TiendaNube credentials not found in environment. Please set TIENDANUBE_ACCESS_TOKEN and TIENDANUBE_STORE_ID environment variables."
       );
     }
 
@@ -151,10 +150,7 @@ class TiendaNubeMCPServer {
         let result: any;
 
         // Route to appropriate handler based on tool name prefix
-        if (
-          name.startsWith("tiendanube_authenticate") ||
-          name.startsWith("tiendanube_get_store_info")
-        ) {
+        if (name.startsWith("tiendanube_get_store_info")) {
           result = await handleAuthenticationTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("product")) {
           result = await handleProductTool(name, args, this.client);
@@ -240,10 +236,10 @@ class TiendaNubeMCPServer {
     // Keep server running
     console.error("Tienda Nube MCP Server running on stdio");
     console.error(
-      "Available tools: Authentication, Products, Orders, Customers, Categories, Coupons, Webhooks"
+      "Available tools: Store Info, Products, Orders, Customers, Categories, Coupons, Webhooks"
     );
     console.error(
-      "Use tiendanube_authenticate to start, then explore 35+ available tools"
+      "Ensure TIENDANUBE_ACCESS_TOKEN and TIENDANUBE_STORE_ID are set, then explore 35+ available tools"
     );
   }
 }

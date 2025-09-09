@@ -7,6 +7,15 @@ import {
   UpdateProductSchema,
   DeleteProductSchema,
   SearchProductsSchema,
+  ListProductVariantsSchema,
+  GetProductVariantSchema,
+  CreateProductVariantSchema,
+  UpdateProductVariantSchema,
+  DeleteProductVariantSchema,
+  ListProductImagesSchema,
+  CreateProductImageSchema,
+  UpdateProductImageSchema,
+  DeleteProductImageSchema,
 } from "../schemas/mcp-tools.js";
 
 /**
@@ -132,6 +141,123 @@ export const productTools: Tool[] = [
       },
     },
   },
+  {
+    name: "tiendanube_list_product_variants",
+    description:
+      "List all variants for a given product, including price, stock and SKU.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+      },
+      required: ["product_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_product_variant",
+    description: "Get a specific variant of a product by ID.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+        variant_id: { type: "number", description: "Variant ID" },
+      },
+      required: ["product_id", "variant_id"],
+    },
+  },
+  {
+    name: "tiendanube_create_product_variant",
+    description: "Create a new variant for a product (price, stock, sku, etc.)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+        price: { type: "string", description: "Variant price" },
+        promotional_price: { type: "string", description: "Promo price" },
+        stock: { type: "number", description: "Stock quantity" },
+        stock_management: { type: "boolean", description: "Manage stock" },
+        sku: { type: "string", description: "SKU" },
+        weight: { type: "string", description: "Weight" },
+        width: { type: "string", description: "Width" },
+        height: { type: "string", description: "Height" },
+        depth: { type: "string", description: "Depth" },
+        cost: { type: "string", description: "Cost" },
+      },
+      required: ["product_id", "price"],
+    },
+  },
+  {
+    name: "tiendanube_update_product_variant",
+    description: "Update an existing variant for a product.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+        variant_id: { type: "number", description: "Variant ID" },
+        price: { type: "string", description: "Variant price" },
+        promotional_price: { type: "string", description: "Promo price" },
+        stock: { type: "number", description: "Stock quantity" },
+        stock_management: { type: "boolean", description: "Manage stock" },
+        sku: { type: "string", description: "SKU" },
+        weight: { type: "string", description: "Weight" },
+        width: { type: "string", description: "Width" },
+        height: { type: "string", description: "Height" },
+        depth: { type: "string", description: "Depth" },
+        cost: { type: "string", description: "Cost" },
+      },
+      required: ["product_id", "variant_id"],
+    },
+  },
+  
+  {
+    name: "tiendanube_list_product_images",
+    description: "List all images for a product.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+      },
+      required: ["product_id"],
+    },
+  },
+  {
+    name: "tiendanube_create_product_image",
+    description: "Create/add a new image to a product.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+        src: { type: "string", description: "Image URL" },
+        position: { type: "number", description: "Image position" },
+        alt: {
+          type: "array",
+          description: "Alt text array (localized)",
+          items: { type: "string" },
+        },
+      },
+      required: ["product_id", "src"],
+    },
+  },
+  {
+    name: "tiendanube_update_product_image",
+    description: "Update product image properties (src, position, alt).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product_id: { type: "number", description: "Product ID" },
+        image_id: { type: "number", description: "Image ID" },
+        src: { type: "string", description: "Image URL" },
+        position: { type: "number", description: "Image position" },
+        alt: {
+          type: "array",
+          description: "Alt text array (localized)",
+          items: { type: "string" },
+        },
+      },
+      required: ["product_id", "image_id"],
+    },
+  },
+  
   {
     name: "tiendanube_get_product",
     description:
@@ -398,21 +524,7 @@ export const productTools: Tool[] = [
       required: ["product_id"],
     },
   },
-  {
-    name: "tiendanube_delete_product",
-    description:
-      "Permanently delete a product from the store. This action cannot be undone.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product_id: {
-          type: "number",
-          description: "The unique ID of the product to delete",
-        },
-      },
-      required: ["product_id"],
-    },
-  },
+  
   {
     name: "tiendanube_search_products",
     description:
@@ -623,11 +735,10 @@ export async function handleProductTool(
       }
 
       case "tiendanube_delete_product": {
-        const validatedArgs = DeleteProductSchema.parse(args);
-        await client.delete(`/products/${validatedArgs.product_id}`);
         return {
-          success: true,
-          message: `Product ${validatedArgs.product_id} deleted successfully`,
+          success: false,
+          error: "Delete operations are disabled by policy",
+          type: "ProductError",
         };
       }
 
@@ -637,6 +748,84 @@ export async function handleProductTool(
           params: validatedArgs,
         });
         return response.data;
+      }
+
+      // Variants
+      case "tiendanube_list_product_variants": {
+        const { product_id } = ListProductVariantsSchema.parse(args);
+        const response = await client.get(
+          `/products/${product_id}/variants`
+        );
+        return response.data;
+      }
+
+      case "tiendanube_get_product_variant": {
+        const { product_id, variant_id } = GetProductVariantSchema.parse(args);
+        const response = await client.get(
+          `/products/${product_id}/variants/${variant_id}`
+        );
+        return response.data;
+      }
+
+      case "tiendanube_create_product_variant": {
+        const { product_id, ...variant } = CreateProductVariantSchema.parse(args);
+        const response = await client.post(
+          `/products/${product_id}/variants`,
+          variant
+        );
+        return response.data;
+      }
+
+      case "tiendanube_update_product_variant": {
+        const { product_id, variant_id, ...update } =
+          UpdateProductVariantSchema.parse(args);
+        const response = await client.put(
+          `/products/${product_id}/variants/${variant_id}`,
+          update
+        );
+        return response.data;
+      }
+
+      case "tiendanube_delete_product_variant": {
+        return {
+          success: false,
+          error: "Delete operations are disabled by policy",
+          type: "ProductError",
+        };
+      }
+
+      // Images
+      case "tiendanube_list_product_images": {
+        const { product_id } = ListProductImagesSchema.parse(args);
+        const response = await client.get(`/products/${product_id}/images`);
+        return response.data;
+      }
+
+      case "tiendanube_create_product_image": {
+        const { product_id, ...image } = CreateProductImageSchema.parse(args);
+        const response = await client.post(
+          `/products/${product_id}/images`,
+          image
+        );
+        return response.data;
+      }
+
+      case "tiendanube_update_product_image": {
+        const { product_id, image_id, ...update } =
+          UpdateProductImageSchema.parse(args);
+        const response = await client.put(
+          `/products/${product_id}/images/${image_id}`,
+          update
+        );
+        return response.data;
+      }
+
+      case "tiendanube_delete_product_image": {
+        return {
+          success: false,
+          error: "Delete operations are disabled by policy",
+          type: "ProductError",
+        };
       }
 
       default:

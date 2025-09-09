@@ -16,7 +16,7 @@ export const webhookTools: Tool[] = [
   {
     name: "tiendanube_list_webhooks",
     description:
-      "List all webhooks configured for the store with optional filtering by URL, event type, and creation/update dates.",
+      "🔗 LIST ALL WEBHOOKS - Retrieve all configured webhook endpoints for real-time event notifications. Use this for integration management, webhook monitoring, debugging connectivity issues, and auditing external system integrations. Supports filtering by URL, event type, and date ranges. Essential for maintaining API integrations and event-driven architectures.",
     inputSchema: {
       type: "object",
       properties: {
@@ -93,7 +93,7 @@ export const webhookTools: Tool[] = [
   {
     name: "tiendanube_get_webhook",
     description:
-      "Get detailed information about a specific webhook by ID, including URL, event type, and configuration details.",
+      "🔍 GET SPECIFIC WEBHOOK - Retrieve complete details for a single webhook configuration by its unique ID. Use this when you need comprehensive webhook information including endpoint URL, event type, authentication settings, delivery status, and error logs. Essential for webhook troubleshooting, configuration verification, and integration maintenance.",
     inputSchema: {
       type: "object",
       properties: {
@@ -112,7 +112,7 @@ export const webhookTools: Tool[] = [
   {
     name: "tiendanube_create_webhook",
     description:
-      "Create a new webhook to receive real-time notifications about store events. The URL must be HTTPS and publicly accessible.",
+      "➕ CREATE NEW WEBHOOK - Set up real-time event notifications for external system integrations. Use this to establish automated workflows, sync data with external platforms, trigger business processes, and maintain real-time system connectivity. Supports all major store events including orders, customers, products, and categories. Requires HTTPS endpoints for security compliance.",
     inputSchema: {
       type: "object",
       properties: {
@@ -156,7 +156,7 @@ export const webhookTools: Tool[] = [
   {
     name: "tiendanube_update_webhook",
     description:
-      "Update an existing webhook. Can modify the URL and/or event type. The URL must be HTTPS.",
+      "✏️ UPDATE WEBHOOK - Modify existing webhook configuration including endpoint URL and event type. Use this for changing integration endpoints, updating event subscriptions, fixing broken webhook URLs, and adapting to system changes. Essential for maintaining active integrations and ensuring continuous data flow between systems.",
     inputSchema: {
       type: "object",
       properties: {
@@ -200,21 +200,7 @@ export const webhookTools: Tool[] = [
       required: ["webhook_id"],
     },
   },
-  {
-    name: "tiendanube_delete_webhook",
-    description:
-      "Permanently delete a webhook. This will stop all notifications for the associated event type to the specified URL.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        webhook_id: {
-          type: "number",
-          description: "The unique ID of the webhook to delete",
-        },
-      },
-      required: ["webhook_id"],
-    },
-  },
+  // Delete webhook tool disabled by policy
 ];
 
 /**
@@ -268,11 +254,10 @@ export async function handleWebhookTool(
       }
 
       case "tiendanube_delete_webhook": {
-        const validatedArgs = DeleteWebhookSchema.parse(args);
-        await client.delete(`/webhooks/${validatedArgs.webhook_id}`);
         return {
-          success: true,
-          message: `Webhook ${validatedArgs.webhook_id} deleted successfully`,
+          success: false,
+          error: "Delete operations are disabled by policy",
+          type: "WebhookError",
         };
       }
 

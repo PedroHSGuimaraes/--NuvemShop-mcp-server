@@ -15,13 +15,19 @@ export class TiendaNubeClient {
       ...config,
     };
 
+    const userAgent =
+      process.env["TIENDANUBE_USER_AGENT"] || "TiendaNube-MCP-Server/1.5.0";
+
     this.client = axios.create({
       baseURL: `${this.config.baseUrl}/${this.config.storeId}`,
       timeout: 30000,
       headers: {
+        // Primary header required by Tienda Nube
         Authentication: `bearer ${this.config.accessToken}`,
+        // Fallback for environments expecting Authorization
+        Authorization: `bearer ${this.config.accessToken}`,
         "Content-Type": "application/json",
-        "User-Agent": "TiendaNube-MCP-Server/1.0.0",
+        "User-Agent": userAgent,
       },
     });
 
@@ -112,7 +118,7 @@ export class TiendaNubeClient {
   private checkAuthentication(): void {
     if (!this.config.accessToken || !this.config.storeId) {
       throw new Error(
-        "Authentication required. Please use 'tiendanube_authenticate' tool first to set up your access token and store ID."
+        "Authentication required. Please set TIENDANUBE_ACCESS_TOKEN and TIENDANUBE_STORE_ID environment variables."
       );
     }
   }
@@ -125,6 +131,23 @@ export class TiendaNubeClient {
     // Skip auth check for the store endpoint when authenticating
     if (endpoint !== "/store") {
       this.checkAuthentication();
+    }
+
+    // Special-case for store info endpoint: it's not under /{store_id}
+    if (endpoint === "/store") {
+      const response: AxiosResponse<T> = await this.client.get(
+        `${this.config.baseUrl}${endpoint}`,
+        {
+          params,
+          ...config,
+        }
+      );
+
+      return {
+        data: response.data,
+        status: response.status,
+        statusText: response.statusText,
+      };
     }
 
     const response: AxiosResponse<T> = await this.client.get(endpoint, {
@@ -244,6 +267,8 @@ export class TiendaNubeClient {
 
     if (newConfig.accessToken) {
       this.client.defaults.headers["Authentication"] =
+        `bearer ${newConfig.accessToken}`;
+      this.client.defaults.headers["Authorization"] =
         `bearer ${newConfig.accessToken}`;
     }
 

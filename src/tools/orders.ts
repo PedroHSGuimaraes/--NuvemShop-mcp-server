@@ -17,7 +17,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_list_orders",
     description:
-      "List all orders in the store with comprehensive filtering options including status, payment status, shipping status, dates, totals, and customer information.",
+      "📋 LIST ALL ORDERS - Retrieve a paginated list of store orders with comprehensive filtering capabilities. Use this for order management, analytics, and finding specific orders. Supports filtering by status, payment state, shipping status, date ranges, total values, customer IDs, and text search. Returns order details including customer info, products, totals, and fulfillment data.",
     inputSchema: {
       type: "object",
       properties: {
@@ -123,7 +123,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_get_order",
     description:
-      "Get detailed information about a specific order by ID, including customer data, products, shipping, payment information, and fulfillment status.",
+      "🔍 GET SPECIFIC ORDER - Retrieve complete details for a single order by its unique ID. Use this when you need comprehensive information about a specific order including customer data, product line items, pricing, shipping address, payment details, fulfillment status, tracking info, and order history. Essential for order processing, customer service, and detailed analysis.",
     inputSchema: {
       type: "object",
       properties: {
@@ -142,7 +142,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_create_order",
     description:
-      "Create a new order in the store. Requires customer information, products, and billing address. Supports multiple products, custom pricing, shipping options, and payment settings.",
+      "➕ CREATE NEW ORDER - Create a new order programmatically with complete customer and product information. Use this for manual order creation, bulk imports, external integrations, or processing orders from other channels. Requires customer details (name, email), product variants with quantities, and billing address. Supports custom pricing, shipping options, payment gateway selection, and inventory management.",
     inputSchema: {
       type: "object",
       properties: {
@@ -329,7 +329,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_update_order",
     description:
-      "Update an existing order. Allows updating owner notes and order status. Limited fields can be modified after order creation.",
+      "✏️ UPDATE ORDER - Modify specific fields of an existing order. Use this to update order status (open/closed/cancelled) or add internal owner notes for order management. Limited to certain fields after order creation to maintain data integrity. Commonly used for order state management and adding administrative comments.",
     inputSchema: {
       type: "object",
       properties: {
@@ -353,7 +353,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_cancel_order",
     description:
-      "Cancel an existing order. This will set the order status to cancelled and may trigger refund processes.",
+      "❌ CANCEL ORDER - Cancel an existing order and optionally specify the cancellation reason. Use this for order cancellations due to customer requests, fraud detection, inventory issues, or other business reasons. Sets order status to 'cancelled' and may trigger automatic refund processes depending on payment status. Important for order management and customer service.",
     inputSchema: {
       type: "object",
       properties: {
@@ -372,7 +372,7 @@ export const orderTools: Tool[] = [
   {
     name: "tiendanube_get_order_fulfillment",
     description:
-      "Get fulfillment information for an order, including shipping details, tracking information, and fulfillment status.",
+      "📦 GET ORDER FULFILLMENT - Retrieve detailed fulfillment and shipping information for a specific order. Use this to track order fulfillment status, shipping details, carrier information, tracking numbers, delivery dates, and fulfillment order line items. Essential for logistics management, customer support, and shipping status updates.",
     inputSchema: {
       type: "object",
       properties: {

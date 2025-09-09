@@ -1,8 +1,8 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { TiendaNubeClient } from "../utils/client.js";
 import {
-  AuthenticateSchema,
   GetStoreInfoSchema,
+  EmptyArgsSchema,
 } from "../schemas/mcp-tools.js";
 
 /**
@@ -11,28 +11,36 @@ import {
 
 export const authenticationTools: Tool[] = [
   {
-    name: "tiendanube_authenticate",
-    description:
-      "Authenticate with Tienda Nube API using access token and store ID. This sets up the connection for all subsequent API calls.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        access_token: {
-          type: "string",
-          description: "OAuth 2.0 access token for the Tienda Nube API",
-        },
-        store_id: {
-          type: "string",
-          description: "Store ID for the Tienda Nube store",
-        },
-      },
-      required: ["access_token", "store_id"],
-    },
-  },
-  {
     name: "tiendanube_get_store_info",
     description:
       "Get basic information about the authenticated store including name, plan, configuration, and available features.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "tiendanube_list_payment_providers",
+    description:
+      "List available payment providers configured in the store (extracted from /store).",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "tiendanube_list_shipping_providers",
+    description:
+      "List available shipping providers configured in the store (extracted from /store).",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "tiendanube_get_store_settings",
+    description:
+      "Get extended store settings including languages, design, features and domains (from /store).",
     inputSchema: {
       type: "object",
       properties: {},
@@ -50,35 +58,6 @@ export async function handleAuthenticationTool(
 ): Promise<any> {
   try {
     switch (name) {
-      case "tiendanube_authenticate": {
-        const validatedArgs = AuthenticateSchema.parse(args);
-
-        // Update client configuration
-        client.updateConfig({
-          accessToken: validatedArgs.access_token,
-          storeId: validatedArgs.store_id,
-        });
-
-        // Test the connection by getting store info
-        const response = await client.get("/store");
-        const store = response.data as any;
-
-        return {
-          success: true,
-          message: "Successfully authenticated with Tienda Nube API",
-          store: {
-            id: store.id,
-            name:
-              store.name?.es || store.name?.pt || store.name?.en || "Unknown",
-            domain: store.main_domain,
-            plan: store.plan_name,
-            currency: store.currency,
-            country: store.country,
-            language: store.language,
-          },
-        };
-      }
-
       case "tiendanube_get_store_info": {
         GetStoreInfoSchema.parse(args);
 
@@ -108,6 +87,36 @@ export async function handleAuthenticationTool(
           features: store.features,
           payment_providers: store.payment_providers,
           shipping_providers: store.shipping_providers,
+        };
+      }
+
+      case "tiendanube_list_payment_providers": {
+        EmptyArgsSchema.parse(args);
+        const response = await client.get("/store");
+        const store = response.data as any;
+        return store.payment_providers || [];
+      }
+
+      case "tiendanube_list_shipping_providers": {
+        EmptyArgsSchema.parse(args);
+        const response = await client.get("/store");
+        const store = response.data as any;
+        return store.shipping_providers || [];
+      }
+
+      case "tiendanube_get_store_settings": {
+        EmptyArgsSchema.parse(args);
+        const response = await client.get("/store");
+        const store = response.data as any;
+        return {
+          languages: store.languages,
+          language: store.language,
+          currency: store.currency,
+          country: store.country,
+          design: store.design,
+          features: store.features,
+          main_domain: store.main_domain,
+          original_domain: store.original_domain,
         };
       }
 

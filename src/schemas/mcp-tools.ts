@@ -2,12 +2,7 @@ import { z } from "zod";
 
 // MCP Tool Schemas for Tienda Nube API
 
-// Authentication tool schemas
-export const AuthenticateSchema = z.object({
-  access_token: z.string().min(1, "Access token is required"),
-  store_id: z.string().min(1, "Store ID is required"),
-});
-
+// Store info tool schema
 export const GetStoreInfoSchema = z.object({});
 
 // Product tool schemas
@@ -126,6 +121,65 @@ export const SearchProductsSchema = z.object({
   language: z.string().length(2).optional(),
   category_id: z.number().int().positive().optional(),
   published: z.boolean().optional(),
+});
+
+// Product Variant tool schemas
+export const ListProductVariantsSchema = z.object({
+  product_id: z.number().int().positive(),
+});
+
+export const GetProductVariantSchema = z.object({
+  product_id: z.number().int().positive(),
+  variant_id: z.number().int().positive(),
+});
+
+export const CreateProductVariantSchema = z.object({
+  product_id: z.number().int().positive(),
+  price: z.string(),
+  promotional_price: z.string().nullable().optional(),
+  stock: z.number().int().nonnegative().optional(),
+  stock_management: z.boolean().optional(),
+  sku: z.string().nullable().optional(),
+  weight: z.string().optional(),
+  width: z.string().nullable().optional(),
+  height: z.string().nullable().optional(),
+  depth: z.string().nullable().optional(),
+  cost: z.string().nullable().optional(),
+});
+
+export const UpdateProductVariantSchema = CreateProductVariantSchema.partial().extend({
+  product_id: z.number().int().positive(),
+  variant_id: z.number().int().positive(),
+});
+
+export const DeleteProductVariantSchema = z.object({
+  product_id: z.number().int().positive(),
+  variant_id: z.number().int().positive(),
+});
+
+// Product Image tool schemas
+export const ListProductImagesSchema = z.object({
+  product_id: z.number().int().positive(),
+});
+
+export const CreateProductImageSchema = z.object({
+  product_id: z.number().int().positive(),
+  src: z.string().url(),
+  position: z.number().int().positive().optional(),
+  alt: z.array(z.string()).optional(),
+});
+
+export const UpdateProductImageSchema = z.object({
+  product_id: z.number().int().positive(),
+  image_id: z.number().int().positive(),
+  src: z.string().url().optional(),
+  position: z.number().int().positive().optional(),
+  alt: z.array(z.string()).optional(),
+});
+
+export const DeleteProductImageSchema = z.object({
+  product_id: z.number().int().positive(),
+  image_id: z.number().int().positive(),
 });
 
 // Category tool schemas
@@ -323,6 +377,9 @@ export const UpdateCustomerSchema = z.object({
 export const DeleteCustomerSchema = z.object({
   customer_id: z.number().int().positive(),
 });
+
+// Store auxiliary tool schemas
+export const EmptyArgsSchema = z.object({});
 
 export const SearchCustomersSchema = z.object({
   query: z.string().min(1, "Search query is required"),
