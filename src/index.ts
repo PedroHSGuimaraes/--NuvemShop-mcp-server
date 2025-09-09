@@ -19,6 +19,10 @@ import { orderTools, handleOrderTool } from "./tools/orders.js";
 import { customerTools, handleCustomerTool } from "./tools/customers.js";
 import { webhookTools, handleWebhookTool } from "./tools/webhooks.js";
 import {
+  abandonedCheckoutTools,
+  handleAbandonedCheckoutTool,
+} from "./tools/abandoned-checkouts.js";
+import {
   categoryTools,
   couponTools,
   handleCategoryTool,
@@ -133,6 +137,7 @@ class TiendaNubeMCPServer {
       ...categoryTools,
       ...couponTools,
       ...webhookTools,
+      ...abandonedCheckoutTools,
     ];
 
     // Handle list tools request
@@ -150,7 +155,12 @@ class TiendaNubeMCPServer {
         let result: any;
 
         // Route to appropriate handler based on tool name prefix
-        if (name.startsWith("tiendanube_get_store_info")) {
+        if (
+          name.startsWith("tiendanube_") &&
+          (name.includes("store") ||
+            name.includes("payment_provider") ||
+            name.includes("shipping_providers"))
+        ) {
           result = await handleAuthenticationTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("product")) {
           result = await handleProductTool(name, args, this.client);
@@ -170,6 +180,11 @@ class TiendaNubeMCPServer {
           result = await handleCouponTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("webhook")) {
           result = await handleWebhookTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
+          name.includes("abandoned_checkout")
+        ) {
+          result = await handleAbandonedCheckoutTool(name, args, this.client);
         } else {
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }

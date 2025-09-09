@@ -558,6 +558,30 @@ export const DeleteCouponSchema = z.object({
   coupon_id: z.number().int().positive(),
 });
 
+// Abandoned checkout tool schemas
+export const ListAbandonedCheckoutsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+  created_at_min: z.string().datetime().optional(),
+  created_at_max: z.string().datetime().optional(),
+  updated_at_min: z.string().datetime().optional(),
+  updated_at_max: z.string().datetime().optional(),
+  email: z.string().email().optional(),
+  q: z.string().optional(),
+});
+
+export const GetAbandonedCheckoutSchema = z.object({
+  abandoned_checkout_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+export const SendAbandonedCheckoutRecoveryEmailSchema = z.object({
+  abandoned_checkout_id: z.number().int().positive(),
+  language: z.string().length(2).optional(),
+});
+
 // Script tag tool schemas
 export const ListScriptTagsSchema = z.object({
   page: z.number().int().positive().optional(),
