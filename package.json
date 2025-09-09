@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "tiendanube-mcp-server": "./dist/index.js"
+    "tiendanube-mcp-server": "./start-mcp.js"
   },
   "files": [
     "dist/**/*",
+    "start-mcp.js",
     "README.md",
     "package.json"
   ],
