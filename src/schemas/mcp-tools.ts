@@ -52,6 +52,20 @@ export const GetProductSchema = z.object({
   language: z.string().length(2).optional(),
 });
 
+export const GetProductBySkuSchema = z.object({
+  sku: z.string(),
+});
+
+export const UpdateStockAndPriceSchema = z.object({
+  products: z.array(
+    z.object({
+      id: z.number().int().positive(),
+      price: z.string().optional(),
+      stock: z.number().int().nonnegative().optional(),
+    })
+  ),
+});
+
 export const CreateProductSchema = z.object({
   name_es: z.string().min(1, "Spanish name is required"),
   name_pt: z.string().optional(),
@@ -180,6 +194,58 @@ export const UpdateProductImageSchema = z.object({
 export const DeleteProductImageSchema = z.object({
   product_id: z.number().int().positive(),
   image_id: z.number().int().positive(),
+});
+
+// Custom Fields tool schemas (Products, Variants, Categories, Orders)
+export const GetProductCustomFieldsSchema = z.object({
+  product_id: z.number().int().positive(),
+});
+
+export const UpdateProductCustomFieldsSchema = z.object({
+  product_id: z.number().int().positive(),
+  // Accept flexible key-value pairs
+  custom_fields: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.null()])
+  ),
+});
+
+export const GetProductVariantCustomFieldsSchema = z.object({
+  product_id: z.number().int().positive(),
+  variant_id: z.number().int().positive(),
+});
+
+export const UpdateProductVariantCustomFieldsSchema = z.object({
+  product_id: z.number().int().positive(),
+  variant_id: z.number().int().positive(),
+  custom_fields: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.null()])
+  ),
+});
+
+export const GetCategoryCustomFieldsSchema = z.object({
+  category_id: z.number().int().positive(),
+});
+
+export const UpdateCategoryCustomFieldsSchema = z.object({
+  category_id: z.number().int().positive(),
+  custom_fields: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.null()])
+  ),
+});
+
+export const GetOrderCustomFieldsSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const UpdateOrderCustomFieldsSchema = z.object({
+  order_id: z.number().int().positive(),
+  custom_fields: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.null()])
+  ),
 });
 
 // Category tool schemas
@@ -332,6 +398,34 @@ export const GetOrderFulfillmentSchema = z.object({
   order_id: z.number().int().positive(),
 });
 
+export const MarkOrderAsPaidSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const CloseOrderSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const ReopenOrderSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const CreateInvoiceSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const GetInvoiceSchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const GetOrderValueHistorySchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
+export const GetOrderEditHistorySchema = z.object({
+  order_id: z.number().int().positive(),
+});
+
 // Customer tool schemas
 export const ListCustomersSchema = z.object({
   page: z.number().int().positive().optional(),
@@ -353,6 +447,8 @@ export const GetCustomerSchema = z.object({
 export const CreateCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
+  password: z.string().optional(),
+  send_invitation: z.boolean().optional(),
   phone: z.string().optional(),
   identification: z.string().optional(),
   note: z.string().optional(),
@@ -369,9 +465,17 @@ export const UpdateCustomerSchema = z.object({
   customer_id: z.number().int().positive(),
   name: z.string().optional(),
   email: z.string().email().optional(),
+  password: z.string().optional(),
   phone: z.string().optional(),
   identification: z.string().optional(),
   note: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  province: z.string().optional(),
+  country: z.string().optional(),
+  zipcode: z.string().optional(),
+  number: z.string().optional(),
+  floor: z.string().optional(),
 });
 
 export const DeleteCustomerSchema = z.object({
@@ -397,6 +501,8 @@ export const ListWebhooksSchema = z.object({
   event: z
     .enum([
       "app/uninstalled",
+      "app/suspended",
+      "app/resumed",
       "category/created",
       "category/updated",
       "category/deleted",
@@ -409,15 +515,22 @@ export const ListWebhooksSchema = z.object({
       "order/packed",
       "order/fulfilled",
       "order/cancelled",
-      "order/custom_fields_updated",
+      "order/custom_fields/created",
+      "order/custom_fields/updated",
+      "order/custom_fields/deleted",
       "order/edited",
       "order/pending",
       "order/voided",
+      "order/unpacked",
       "product/created",
       "product/updated",
       "product/deleted",
-      "product_variant/custom_fields_updated",
+      "product_variant/custom_fields/created",
+      "product_variant/custom_fields/updated",
+      "product_variant/custom_fields/deleted",
       "domain/updated",
+      "subscription/updated",
+      "fulfillment/updated",
     ])
     .optional(),
   created_at_min: z.string().datetime().optional(),
@@ -441,6 +554,8 @@ export const CreateWebhookSchema = z.object({
     ),
   event: z.enum([
     "app/uninstalled",
+    "app/suspended",
+    "app/resumed",
     "category/created",
     "category/updated",
     "category/deleted",
@@ -453,15 +568,22 @@ export const CreateWebhookSchema = z.object({
     "order/packed",
     "order/fulfilled",
     "order/cancelled",
-    "order/custom_fields_updated",
+    "order/custom_fields/created",
+    "order/custom_fields/updated",
+    "order/custom_fields/deleted",
     "order/edited",
     "order/pending",
     "order/voided",
+    "order/unpacked",
     "product/created",
     "product/updated",
     "product/deleted",
-    "product_variant/custom_fields_updated",
+    "product_variant/custom_fields/created",
+    "product_variant/custom_fields/updated",
+    "product_variant/custom_fields/deleted",
     "domain/updated",
+    "subscription/updated",
+    "fulfillment/updated",
   ]),
 });
 
@@ -478,6 +600,8 @@ export const UpdateWebhookSchema = z.object({
   event: z
     .enum([
       "app/uninstalled",
+      "app/suspended",
+      "app/resumed",
       "category/created",
       "category/updated",
       "category/deleted",
@@ -490,15 +614,22 @@ export const UpdateWebhookSchema = z.object({
       "order/packed",
       "order/fulfilled",
       "order/cancelled",
-      "order/custom_fields_updated",
+      "order/custom_fields/created",
+      "order/custom_fields/updated",
+      "order/custom_fields/deleted",
       "order/edited",
       "order/pending",
       "order/voided",
+      "order/unpacked",
       "product/created",
       "product/updated",
       "product/deleted",
-      "product_variant/custom_fields_updated",
+      "product_variant/custom_fields/created",
+      "product_variant/custom_fields/updated",
+      "product_variant/custom_fields/deleted",
       "domain/updated",
+      "subscription/updated",
+      "fulfillment/updated",
     ])
     .optional(),
 });
@@ -529,7 +660,7 @@ export const GetCouponSchema = z.object({
 
 export const CreateCouponSchema = z.object({
   code: z.string().min(1, "Coupon code is required"),
-  type: z.enum(["percentage", "absolute"]),
+  type: z.enum(["percentage", "absolute", "shipping"]),
   value: z.string().min(1, "Coupon value is required"),
   valid: z.boolean().optional(),
   max_uses: z.number().int().positive().optional(),
@@ -543,7 +674,7 @@ export const CreateCouponSchema = z.object({
 export const UpdateCouponSchema = z.object({
   coupon_id: z.number().int().positive(),
   code: z.string().optional(),
-  type: z.enum(["percentage", "absolute"]).optional(),
+  type: z.enum(["percentage", "absolute", "shipping"]).optional(),
   value: z.string().optional(),
   valid: z.boolean().optional(),
   max_uses: z.number().int().positive().optional(),
@@ -573,16 +704,104 @@ export const ListAbandonedCheckoutsSchema = z.object({
 });
 
 export const GetAbandonedCheckoutSchema = z.object({
-  abandoned_checkout_id: z.number().int().positive(),
+  checkout_id: z.number().int().positive(),
   fields: z.string().optional(),
 });
 
 export const SendAbandonedCheckoutRecoveryEmailSchema = z.object({
-  abandoned_checkout_id: z.number().int().positive(),
+  checkout_id: z.number().int().positive(),
   language: z.string().length(2).optional(),
 });
 
-// Script tag tool schemas
+export const AddCouponToAbandonedCheckoutSchema = z.object({
+  cart_id: z.number().int().positive(),
+  coupon_id: z.number().int().positive(),
+});
+
+// Checkout tool schemas
+export const GetCheckoutSchema = z.object({
+  checkout_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+
+// Cart tool schemas
+export const GetCartSchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+    fields: z.string().optional(),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  });
+
+export const AddCartItemSchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+    variant_id: z.number().int().positive(),
+    quantity: z.number().int().positive().min(1),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  });
+
+export const RemoveCartItemSchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+    item_id: z.number().int().positive().optional(),
+    variant_id: z.number().int().positive().optional(),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  })
+  .refine((v) => !!v.item_id || !!v.variant_id, {
+    message: "Provide item_id or variant_id to remove",
+    path: ["item_id"],
+  });
+
+export const ApplyCartCouponSchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+    code: z.string().min(1, "Coupon code is required"),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  });
+
+export const UpdateCartItemQuantitySchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+    item_id: z.number().int().positive().optional(),
+    variant_id: z.number().int().positive().optional(),
+    quantity: z.number().int().positive().min(1),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  })
+  .refine((v) => !!v.item_id || !!v.variant_id, {
+    message: "Provide item_id or variant_id to update",
+    path: ["item_id"],
+  });
+
+export const ClearCartSchema = z
+  .object({
+    cart_id: z.number().int().positive().optional(),
+    cart_token: z.string().min(1).optional(),
+  })
+  .refine((v) => !!v.cart_id || !!v.cart_token, {
+    message: "Either cart_id or cart_token is required",
+    path: ["cart_id"],
+  });// Script tag tool schemas
 export const ListScriptTagsSchema = z.object({
   page: z.number().int().positive().optional(),
   per_page: z.number().int().positive().max(200).optional(),
@@ -627,3 +846,266 @@ export const UpdateScriptTagSchema = z.object({
 export const DeleteScriptTagSchema = z.object({
   script_tag_id: z.number().int().positive(),
 });
+
+// Location tool schemas
+export const ListLocationsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+  created_at_min: z.string().datetime().optional(),
+  created_at_max: z.string().datetime().optional(),
+  updated_at_min: z.string().datetime().optional(),
+  updated_at_max: z.string().datetime().optional(),
+});
+
+export const GetLocationSchema = z.object({
+  location_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Payment Provider tool schemas
+export const ListPaymentProvidersSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetPaymentProviderSchema = z.object({
+  provider_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Payment Option tool schemas
+export const ListPaymentOptionsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetPaymentOptionSchema = z.object({
+  option_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Metafields tool schemas
+export const ListMetafieldsSchema = z.object({
+  owner_resource: z.string().optional(),
+  owner_id: z.number().int().positive().optional(),
+  key: z.string().optional(),
+  namespace: z.string().optional(),
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+});
+
+export const GetMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+});
+
+export const CreateMetafieldSchema = z.object({
+  owner_resource: z.string(),
+  owner_id: z.number().int().positive(),
+  key: z.string().min(1),
+  value: z.union([z.string(), z.number(), z.boolean()]).or(z.null()),
+  namespace: z.string().optional(),
+  value_type: z.string().optional(),
+});
+
+export const UpdateMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+  value: z.union([z.string(), z.number(), z.boolean()]).or(z.null()),
+});
+
+export const DeleteMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+});
+
+// Shipping Carrier schemas
+export const ListShippingCarriersSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+});
+
+export const GetShippingCarrierSchema = z.object({
+  carrier_id: z.number().int().positive(),
+});
+
+// Discounts schemas
+export const ListDiscountsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetDiscountSchema = z.object({
+  discount_id: z.number().int().positive(),
+});
+
+// Disputes schemas
+export const ListDisputesSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetDisputeSchema = z.object({
+  dispute_id: z.number().int().positive(),
+});
+
+// Business Rules schemas
+export const GetBusinessRulesSchema = z.object({});
+
+// Draft Order schemas
+export const ListDraftOrdersSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+  created_at_min: z.string().datetime().optional(),
+  created_at_max: z.string().datetime().optional(),
+  updated_at_min: z.string().datetime().optional(),
+  updated_at_max: z.string().datetime().optional(),
+});
+
+export const GetDraftOrderSchema = z.object({
+  draft_order_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Fulfillment Order by ID
+export const GetFulfillmentOrderSchema = z.object({
+  fulfillment_order_id: z.number().int().positive(),
+});
+
+// Order Transactions schemas
+export const ListOrderTransactionsSchema = z.object({
+  order_id: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+});
+
+export const GetOrderTransactionSchema = z.object({
+  order_id: z.number().int().positive(),
+  transaction_id: z.number().int().positive(),
+});
+/* DUPLICATE SCHEMAS (commented out to avoid redeclare)
+// Location tool schemas
+export const ListLocationsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+  created_at_min: z.string().datetime().optional(),
+  created_at_max: z.string().datetime().optional(),
+  updated_at_min: z.string().datetime().optional(),
+  updated_at_max: z.string().datetime().optional(),
+});
+
+export const GetLocationSchema = z.object({
+  location_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Payment Provider tool schemas
+export const ListPaymentProvidersSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetPaymentProviderSchema = z.object({
+  provider_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Payment Option tool schemas
+export const ListPaymentOptionsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetPaymentOptionSchema = z.object({
+  option_id: z.number().int().positive(),
+  fields: z.string().optional(),
+});
+
+// Metafields tool schemas
+export const ListMetafieldsSchema = z.object({
+  owner_resource: z.string().optional(),
+  owner_id: z.number().int().positive().optional(),
+  key: z.string().optional(),
+  namespace: z.string().optional(),
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+});
+
+export const GetMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+});
+
+export const CreateMetafieldSchema = z.object({
+  owner_resource: z.string(),
+  owner_id: z.number().int().positive(),
+  key: z.string().min(1),
+  value: z.union([z.string(), z.number(), z.boolean()]).or(z.null()),
+  namespace: z.string().optional(),
+  value_type: z.string().optional(),
+});
+
+export const UpdateMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+  value: z.union([z.string(), z.number(), z.boolean()]).or(z.null()),
+});
+
+export const DeleteMetafieldSchema = z.object({
+  metafield_id: z.number().int().positive(),
+});
+
+// Shipping Carrier schemas
+export const ListShippingCarriersSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+});
+
+export const GetShippingCarrierSchema = z.object({
+  carrier_id: z.number().int().positive(),
+});
+
+// Discounts schemas
+export const ListDiscountsSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetDiscountSchema = z.object({
+  discount_id: z.number().int().positive(),
+});
+
+// Disputes schemas
+export const ListDisputesSchema = z.object({
+  page: z.number().int().positive().optional(),
+  per_page: z.number().int().positive().max(200).optional(),
+  fields: z.string().optional(),
+  since_id: z.number().int().positive().optional(),
+});
+
+export const GetDisputeSchema = z.object({
+  dispute_id: z.number().int().positive(),
+});
+
+// Business Rules schemas
+export const GetBusinessRulesSchema = z.object({});
+
+*/
+

@@ -7,6 +7,20 @@ import {
   UpdateOrderSchema,
   CancelOrderSchema,
   GetOrderFulfillmentSchema,
+  GetOrderCustomFieldsSchema,
+  UpdateOrderCustomFieldsSchema,
+  MarkOrderAsPaidSchema,
+  CloseOrderSchema,
+  ReopenOrderSchema,
+  CreateInvoiceSchema,
+  GetInvoiceSchema,
+  GetOrderValueHistorySchema,
+  GetOrderEditHistorySchema,
+  ListDraftOrdersSchema,
+  GetDraftOrderSchema,
+  GetFulfillmentOrderSchema,
+  ListOrderTransactionsSchema,
+  GetOrderTransactionSchema,
 } from "../schemas/mcp-tools.js";
 
 /**
@@ -118,6 +132,42 @@ export const orderTools: Tool[] = [
           enum: ["fulfillment_orders"],
         },
       },
+    },
+  },
+  {
+    name: "tiendanube_get_order_custom_fields",
+    description:
+      "GET ORDER CUSTOM FIELDS - Retrieve all custom fields for a specific order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_update_order_custom_fields",
+    description:
+      "UPDATE ORDER CUSTOM FIELDS - Replace or set custom fields for an order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+        custom_fields: {
+          type: "object",
+          description: "Key-value pairs of custom fields",
+          additionalProperties: {
+            anyOf: [
+              { type: "string" },
+              { type: "number" },
+              { type: "boolean" },
+              { type: "null" },
+            ],
+          },
+        },
+      },
+      required: ["order_id", "custom_fields"],
     },
   },
   {
@@ -384,6 +434,153 @@ export const orderTools: Tool[] = [
       required: ["order_id"],
     },
   },
+  {
+    name: "tiendanube_mark_order_as_paid",
+    description: "MARK ORDER AS PAID - Mark an order as paid.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_list_draft_orders",
+    description:
+      "LIST DRAFT ORDERS - Retrieve paginated draft orders (quotes) with optional date filters.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        page: { type: "number", description: "Page number" },
+        per_page: { type: "number", description: "Items per page" },
+        fields: { type: "string", description: "Fields filter" },
+        since_id: { type: "number", description: "Since ID" },
+        created_at_min: { type: "string", description: "Created after (ISO)" },
+        created_at_max: { type: "string", description: "Created before (ISO)" },
+        updated_at_min: { type: "string", description: "Updated after (ISO)" },
+        updated_at_max: { type: "string", description: "Updated before (ISO)" },
+      },
+    },
+  },
+  {
+    name: "tiendanube_get_draft_order",
+    description:
+      "GET DRAFT ORDER - Retrieve a single draft order by ID.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        draft_order_id: { type: "number", description: "Draft order ID" },
+        fields: { type: "string", description: "Fields filter" },
+      },
+      required: ["draft_order_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_fulfillment_order",
+    description:
+      "GET FULFILLMENT ORDER - Retrieve a fulfillment order by its ID.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        fulfillment_order_id: { type: "number", description: "Fulfillment order ID" },
+      },
+      required: ["fulfillment_order_id"],
+    },
+  },
+  {
+    name: "tiendanube_list_order_transactions",
+    description:
+      "LIST ORDER TRANSACTIONS - Retrieve transactions for a given order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+        page: { type: "number", description: "Page number" },
+        per_page: { type: "number", description: "Items per page" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_order_transaction",
+    description:
+      "GET ORDER TRANSACTION - Retrieve a single transaction by order and transaction IDs.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+        transaction_id: { type: "number", description: "Transaction ID" },
+      },
+      required: ["order_id", "transaction_id"],
+    },
+  },
+  {
+    name: "tiendanube_close_order",
+    description: "CLOSE ORDER - Close (archive) an order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_reopen_order",
+    description: "REOPEN ORDER - Reopen a previously closed order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_create_invoice",
+    description: "CREATE INVOICE - Create an invoice for an order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_invoice",
+    description: "GET INVOICE - Retrieve an invoice for an order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_order_value_history",
+    description: "GET ORDER VALUE HISTORY - Get a history of an order's total value changes.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
+  {
+    name: "tiendanube_get_order_edit_history",
+    description: "GET ORDER EDIT HISTORY - Retrieve a log of all changes made to an order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: { type: "number", description: "Order ID" },
+      },
+      required: ["order_id"],
+    },
+  },
 ];
 
 /**
@@ -397,15 +594,46 @@ export async function handleOrderTool(
   try {
     switch (name) {
       case "tiendanube_list_orders": {
-        const validatedArgs = ListOrdersSchema.parse(args);
-        const response = await client.get("/orders", { params: validatedArgs });
+        const validatedArgs = ListOrdersSchema.parse(args ?? {});
+        // Normalize date filters to RFC3339 UTC to avoid API format issues
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
+        });
+        const response = await client.get("/orders", params);
+        return response.data;
+      }
+
+      case "tiendanube_get_order_custom_fields": {
+        const { order_id } = GetOrderCustomFieldsSchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/custom_fields`);
+        return response.data;
+      }
+
+      case "tiendanube_update_order_custom_fields": {
+        const { order_id, custom_fields } =
+          UpdateOrderCustomFieldsSchema.parse(args);
+        const response = await client.put(
+          `/orders/${order_id}/custom_fields`,
+          custom_fields
+        );
         return response.data;
       }
 
       case "tiendanube_get_order": {
         const validatedArgs = GetOrderSchema.parse(args);
         const { order_id, ...params } = validatedArgs;
-        const response = await client.get(`/orders/${order_id}`, { params });
+        const response = await client.get(`/orders/${order_id}`, params);
         return response.data;
       }
 
@@ -478,23 +706,11 @@ export async function handleOrderTool(
 
       case "tiendanube_cancel_order": {
         const validatedArgs = CancelOrderSchema.parse(args);
-
-        // Cancel order by setting status to cancelled
-        const updateData: any = {
-          status: "cancelled",
-        };
-
-        if (validatedArgs.reason) {
-          updateData.owner_note = validatedArgs.reason;
-        }
-
-        const response = await client.put(
-          `/orders/${validatedArgs.order_id}`,
-          updateData
-        );
+        const { order_id, reason } = validatedArgs;
+        const response = await client.post(`/orders/${order_id}/cancel`, { reason });
         return {
           success: true,
-          message: `Order ${validatedArgs.order_id} cancelled successfully`,
+          message: `Order ${order_id} cancelled successfully`,
           order: response.data,
         };
       }
@@ -506,6 +722,95 @@ export async function handleOrderTool(
         const response = await client.get(
           `/orders/${validatedArgs.order_id}/fulfillment_orders`
         );
+        return response.data;
+      }
+
+      case "tiendanube_mark_order_as_paid": {
+        const { order_id } = MarkOrderAsPaidSchema.parse(args);
+        const response = await client.post(`/orders/${order_id}/pay`);
+        return response.data;
+      }
+
+      // Draft orders
+      case "tiendanube_list_draft_orders": {
+        const validatedArgs = ListDraftOrdersSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
+        });
+        const response = await client.get("/draft_orders", params);
+        return response.data;
+      }
+
+      case "tiendanube_get_draft_order": {
+        const { draft_order_id, ...params } = GetDraftOrderSchema.parse(args);
+        const response = await client.get(`/draft_orders/${draft_order_id}`, params);
+        return response.data;
+      }
+
+      // Fulfillment order by ID
+      case "tiendanube_get_fulfillment_order": {
+        const { fulfillment_order_id } = GetFulfillmentOrderSchema.parse(args);
+        const response = await client.get(`/fulfillment_orders/${fulfillment_order_id}`);
+        return response.data;
+      }
+
+      // Order transactions
+      case "tiendanube_list_order_transactions": {
+        const { order_id, ...params } = ListOrderTransactionsSchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/transactions`, params as any);
+        return response.data;
+      }
+
+      case "tiendanube_get_order_transaction": {
+        const { order_id, transaction_id } = GetOrderTransactionSchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/transactions/${transaction_id}`);
+        return response.data;
+      }
+
+      case "tiendanube_close_order": {
+        const { order_id } = CloseOrderSchema.parse(args);
+        const response = await client.post(`/orders/${order_id}/close`);
+        return response.data;
+      }
+
+      case "tiendanube_reopen_order": {
+        const { order_id } = ReopenOrderSchema.parse(args);
+        const response = await client.post(`/orders/${order_id}/reopen`);
+        return response.data;
+      }
+
+      case "tiendanube_create_invoice": {
+        const { order_id } = CreateInvoiceSchema.parse(args);
+        const response = await client.post(`/orders/${order_id}/invoice`);
+        return response.data;
+      }
+
+      case "tiendanube_get_invoice": {
+        const { order_id } = GetInvoiceSchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/invoice`);
+        return response.data;
+      }
+
+      case "tiendanube_get_order_value_history": {
+        const { order_id } = GetOrderValueHistorySchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/history/values`);
+        return response.data;
+      }
+
+      case "tiendanube_get_order_edit_history": {
+        const { order_id } = GetOrderEditHistorySchema.parse(args);
+        const response = await client.get(`/orders/${order_id}/history/editions`);
         return response.data;
       }
 

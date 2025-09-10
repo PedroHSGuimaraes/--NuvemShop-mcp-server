@@ -9,12 +9,9 @@ Connect using: Command Line (STDIO)
 
 Command: node
 
-Arguments: d:\Trabalho\--Hias\--Tiendanube-mcp-server\dist\index.js
+Arguments: d:\Trabalho\--Hias\--Livre\tiendanube-mcp-server\dist\index.js
 
-Environments: 
-TIENDANUBE_ACCESS_TOKEN=seu_token_aqui
-TIENDANUBE_STORE_ID=seu_store_id_aqui
-NODE_ENV=production
+Environments: NODE_ENV=production
 ```
 
 ### 🔄 Alternativa para WSL:
@@ -24,46 +21,32 @@ Connect using: Command Line (STDIO)
 
 Command: wsl
 
-Arguments: node /mnt/d/Trabalho/--Hias/--Tiendanube-mcp-server/dist/index.js
+Arguments: node /mnt/d/Trabalho/--Hias/--Livre/tiendanube-mcp-server/dist/index.js
 
-Environments: 
-TIENDANUBE_ACCESS_TOKEN=seu_token_aqui
-TIENDANUBE_STORE_ID=seu_store_id_aqui
-NODE_ENV=production
-```
-
-### 📦 Alternativa com NPX (Recomendado):
-
-```
-Connect using: Command Line (STDIO)
-
-Command: npx
-
-Arguments: tiendanube-mcp-server
-
-Environments: 
-TIENDANUBE_ACCESS_TOKEN=seu_token_aqui
-TIENDANUBE_STORE_ID=seu_store_id_aqui
-NODE_ENV=production
+Environments: NODE_ENV=production
 ```
 
 ## ✅ Verificações antes de configurar:
 
-1. **Credenciais:** ✅ Substitua `seu_token_aqui` e `seu_store_id_aqui` pelos valores reais
-2. **Projeto compilado:** ✅ (rodamos `npm run build`)
-3. **Arquivo dist/index.js existe:** ✅
-4. **Node.js instalado:** ✅
+1. **Projeto compilado:** ✅ (rodamos `npm run build`)
+2. **Arquivo dist/index.js existe:** ✅
+3. **Node.js instalado:** ✅
 
 ## 🚀 Após conectar no n8n:
 
-1. **Teste:** `tiendanube_get_store_info` (deve funcionar automaticamente)
+1. **Primeiro use:** `tiendanube_authenticate`
+   - access_token: "seu_token_da_tienda_nube"
+   - store_id: "id_da_sua_loja"
 
-2. **Use qualquer uma das 35+ ferramentas disponíveis!**
+2. **Teste:** `tiendanube_get_store_info`
+
+3. **Use qualquer uma das 37 ferramentas disponíveis!**
 
 ## 🛠️ Ferramentas disponíveis:
 
-### Store Info:
+### Autenticação:
 
+- tiendanube_authenticate
 - tiendanube_get_store_info
 
 ### Produtos:

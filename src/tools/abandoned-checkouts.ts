@@ -4,6 +4,7 @@ import {
   ListAbandonedCheckoutsSchema,
   GetAbandonedCheckoutSchema,
   SendAbandonedCheckoutRecoveryEmailSchema,
+  AddCouponToAbandonedCheckoutSchema,
 } from "../schemas/mcp-tools.js";
 
 /**
@@ -71,7 +72,7 @@ export const abandonedCheckoutTools: Tool[] = [
     inputSchema: {
       type: "object",
       properties: {
-        abandoned_checkout_id: {
+        checkout_id: {
           type: "number",
           description: "The unique ID of the abandoned checkout",
         },
@@ -80,7 +81,7 @@ export const abandonedCheckoutTools: Tool[] = [
           description: "Comma-separated list of fields to include in response",
         },
       },
-      required: ["abandoned_checkout_id"],
+      required: ["checkout_id"],
     },
   },
   {
@@ -90,7 +91,7 @@ export const abandonedCheckoutTools: Tool[] = [
     inputSchema: {
       type: "object",
       properties: {
-        abandoned_checkout_id: {
+        checkout_id: {
           type: "number",
           description: "The unique ID of the abandoned checkout",
         },
@@ -99,7 +100,25 @@ export const abandonedCheckoutTools: Tool[] = [
           description: "Optional 2-letter language code (e.g., 'es', 'pt', 'en')",
         },
       },
-      required: ["abandoned_checkout_id"],
+      required: ["checkout_id"],
+    },
+  },
+  {
+    name: "tiendanube_add_coupon_to_abandoned_checkout",
+    description: "➕ ADD COUPON TO ABANDONED CHECKOUT - Add a discount coupon to an abandoned checkout.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        cart_id: {
+          type: "number",
+          description: "The unique ID of the abandoned checkout (cart).",
+        },
+        coupon_id: {
+          type: "number",
+          description: "The unique ID of the coupon to add.",
+        },
+      },
+      required: ["cart_id", "coupon_id"],
     },
   },
 ];
@@ -115,17 +134,35 @@ export async function handleAbandonedCheckoutTool(
   try {
     switch (name) {
       case "tiendanube_list_abandoned_checkouts": {
-        const validatedArgs = ListAbandonedCheckoutsSchema.parse(args);
-        const response = await client.get("/abandoned_checkouts", {
-          params: validatedArgs,
+        const validatedArgs = ListAbandonedCheckoutsSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
         });
-        return response.data;
+        // Try new checkouts endpoint first, fallback to abandoned_checkouts
+        try {
+          const response = await client.get("/checkouts", params);
+          return response.data;
+        } catch (e: any) {
+          if (!(e && (e.status === 404 || e.message?.includes("404")))) throw e;
+          const res2 = await client.get("/abandoned_checkouts", params);
+          return res2.data;
+        }
       }
 
       case "tiendanube_get_abandoned_checkout": {
         const validatedArgs = GetAbandonedCheckoutSchema.parse(args);
-        const { abandoned_checkout_id, fields, ...rest } =
-          validatedArgs as any;
+        const { checkout_id, fields, ...rest } = validatedArgs as any;
 
         // If fields is omitted or explicitly 'all'/'*', request with no fields filter
         const params =
@@ -133,25 +170,26 @@ export async function handleAbandonedCheckoutTool(
             ? { ...rest }
             : { fields, ...rest };
 
-        const response = await client.get(
-          `/abandoned_checkouts/${abandoned_checkout_id}`,
-          {
-            params,
-          }
-        );
-        return response.data;
+        try {
+          const response = await client.get(`/checkouts/${checkout_id}`, params);
+          return response.data;
+        } catch (e: any) {
+          if (!(e && (e.status === 404 || e.message?.includes("404")))) throw e;
+          const res2 = await client.get(`/abandoned_checkouts/${checkout_id}`, params);
+          return res2.data;
+        }
       }
 
       case "tiendanube_send_abandoned_checkout_recovery_email": {
         const validatedArgs = SendAbandonedCheckoutRecoveryEmailSchema.parse(
           args
         );
-        const { abandoned_checkout_id, language } = validatedArgs as any;
+        const { checkout_id, language } = validatedArgs as any;
 
         // Try v1-style endpoint first
         try {
           const res1 = await client.post(
-            `/abandoned_checkouts/${abandoned_checkout_id}/recovery_email`,
+            `/abandoned_checkouts/${checkout_id}/recovery_email`,
             language ? { language } : undefined
           );
           return res1.data ?? { success: true };
@@ -160,7 +198,7 @@ export async function handleAbandonedCheckoutTool(
           if (e && (e.status === 404 || e.message?.includes("404"))) {
             try {
               const res2 = await client.post(
-                `/checkouts/${abandoned_checkout_id}/recovery_email`,
+                `/checkouts/${checkout_id}/recovery_email`,
                 language ? { language } : undefined
               );
               return res2.data ?? { success: true };
@@ -184,6 +222,15 @@ export async function handleAbandonedCheckoutTool(
         }
       }
 
+      case "tiendanube_add_coupon_to_abandoned_checkout": {
+        const validatedArgs = AddCouponToAbandonedCheckoutSchema.parse(args);
+        const { cart_id, coupon_id } = validatedArgs as any;
+        const response = await client.post(`/checkouts/${cart_id}/coupon`, {
+          coupon_id,
+        });
+        return response.data;
+      }
+
       default:
         throw new Error(`Unknown abandoned checkout tool: ${name}`);
     }
@@ -198,4 +245,3 @@ export async function handleAbandonedCheckoutTool(
     throw error;
   }
 }
-

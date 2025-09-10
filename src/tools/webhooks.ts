@@ -48,6 +48,8 @@ export const webhookTools: Tool[] = [
           description: "Filter by event type",
           enum: [
             "app/uninstalled",
+            "app/suspended",
+            "app/resumed",
             "category/created",
             "category/updated",
             "category/deleted",
@@ -60,15 +62,22 @@ export const webhookTools: Tool[] = [
             "order/packed",
             "order/fulfilled",
             "order/cancelled",
-            "order/custom_fields_updated",
+            "order/custom_fields/created",
+            "order/custom_fields/updated",
+            "order/custom_fields/deleted",
             "order/edited",
             "order/pending",
             "order/voided",
+            "order/unpacked",
             "product/created",
             "product/updated",
             "product/deleted",
-            "product_variant/custom_fields_updated",
+            "product_variant/custom_fields/created",
+            "product_variant/custom_fields/updated",
+            "product_variant/custom_fields/deleted",
             "domain/updated",
+            "subscription/updated",
+            "fulfillment/updated",
           ],
         },
         created_at_min: {
@@ -126,6 +135,8 @@ export const webhookTools: Tool[] = [
           description: "Event type that triggers the webhook (required)",
           enum: [
             "app/uninstalled",
+            "app/suspended",
+            "app/resumed",
             "category/created",
             "category/updated",
             "category/deleted",
@@ -138,15 +149,22 @@ export const webhookTools: Tool[] = [
             "order/packed",
             "order/fulfilled",
             "order/cancelled",
-            "order/custom_fields_updated",
+            "order/custom_fields/created",
+            "order/custom_fields/updated",
+            "order/custom_fields/deleted",
             "order/edited",
             "order/pending",
             "order/voided",
+            "order/unpacked",
             "product/created",
             "product/updated",
             "product/deleted",
-            "product_variant/custom_fields_updated",
+            "product_variant/custom_fields/created",
+            "product_variant/custom_fields/updated",
+            "product_variant/custom_fields/deleted",
             "domain/updated",
+            "subscription/updated",
+            "fulfillment/updated",
           ],
         },
       },
@@ -173,6 +191,8 @@ export const webhookTools: Tool[] = [
           description: "Event type that triggers the webhook",
           enum: [
             "app/uninstalled",
+            "app/suspended",
+            "app/resumed",
             "category/created",
             "category/updated",
             "category/deleted",
@@ -185,15 +205,22 @@ export const webhookTools: Tool[] = [
             "order/packed",
             "order/fulfilled",
             "order/cancelled",
-            "order/custom_fields_updated",
+            "order/custom_fields/created",
+            "order/custom_fields/updated",
+            "order/custom_fields/deleted",
             "order/edited",
             "order/pending",
             "order/voided",
+            "order/unpacked",
             "product/created",
             "product/updated",
             "product/deleted",
-            "product_variant/custom_fields_updated",
+            "product_variant/custom_fields/created",
+            "product_variant/custom_fields/updated",
+            "product_variant/custom_fields/deleted",
             "domain/updated",
+            "subscription/updated",
+            "fulfillment/updated",
           ],
         },
       },
@@ -214,19 +241,29 @@ export async function handleWebhookTool(
   try {
     switch (name) {
       case "tiendanube_list_webhooks": {
-        const validatedArgs = ListWebhooksSchema.parse(args);
-        const response = await client.get("/webhooks", {
-          params: validatedArgs,
+        const validatedArgs = ListWebhooksSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
         });
+        const response = await client.get("/webhooks", params);
         return response.data;
       }
 
       case "tiendanube_get_webhook": {
         const validatedArgs = GetWebhookSchema.parse(args);
         const { webhook_id, ...params } = validatedArgs;
-        const response = await client.get(`/webhooks/${webhook_id}`, {
-          params,
-        });
+        const response = await client.get(`/webhooks/${webhook_id}`, params);
         return response.data;
       }
 

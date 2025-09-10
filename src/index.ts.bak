@@ -18,17 +18,10 @@ import { productTools, handleProductTool } from "./tools/products.js";
 import { orderTools, handleOrderTool } from "./tools/orders.js";
 import { customerTools, handleCustomerTool } from "./tools/customers.js";
 import { webhookTools, handleWebhookTool } from "./tools/webhooks.js";
-import { scriptTools, handleScriptTool } from "./tools/scripts.js";
-import { locationTools, handleLocationTool } from "./tools/locations.js";
-import { paymentTools, handlePaymentTool } from "./tools/payments.js";
-import { metafieldTools, handleMetafieldTool } from "./tools/metafields.js";
-import { shippingTools, handleShippingTool } from "./tools/shipping.js";
-import { miscTools, handleMiscTool } from "./tools/discounts-disputes-rules.js";
 import {
   abandonedCheckoutTools,
   handleAbandonedCheckoutTool,
 } from "./tools/abandoned-checkouts.js";
-import { cartTools, handleCartTool } from "./tools/cart.js";
 import { checkoutTools, handleCheckoutTool } from "./tools/checkouts.js";
 import {
   categoryTools,
@@ -145,13 +138,6 @@ class TiendaNubeMCPServer {
       ...categoryTools,
       ...couponTools,
       ...webhookTools,
-      ...scriptTools,
-      ...locationTools,
-      ...paymentTools,
-      ...metafieldTools,
-      ...shippingTools,
-      ...miscTools,
-      ...cartTools,
       ...checkoutTools,
       ...abandonedCheckoutTools,
     ];
@@ -174,8 +160,8 @@ class TiendaNubeMCPServer {
         if (
           name.startsWith("tiendanube_") &&
           (name.includes("store") ||
-            name === "tiendanube_list_payment_providers" ||
-            name === "tiendanube_list_shipping_providers")
+            name.includes("payment_provider") ||
+            name.includes("shipping_providers"))
         ) {
           result = await handleAuthenticationTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("product")) {
@@ -196,38 +182,12 @@ class TiendaNubeMCPServer {
           result = await handleCouponTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("webhook")) {
           result = await handleWebhookTool(name, args, this.client);
-        } else if (name.startsWith("tiendanube_") && name.includes("script_tag")) {
-          result = await handleScriptTool(name, args, this.client);
-        } else if (name.startsWith("tiendanube_") && name.includes("location")) {
-          result = await handleLocationTool(name, args, this.client);
-        } else if (
-          name.startsWith("tiendanube_") &&
-          (name.includes("payment_provider") || name.includes("payment_option"))
-        ) {
-          result = await handlePaymentTool(name, args, this.client);
-        } else if (name.startsWith("tiendanube_") && name.includes("metafield")) {
-          result = await handleMetafieldTool(name, args, this.client);
-        } else if (
-          name.startsWith("tiendanube_") &&
-          (name.includes("shipping_carrier") || name.includes("shipping"))
-        ) {
-          result = await handleShippingTool(name, args, this.client);
-        } else if (
-          name.startsWith("tiendanube_") &&
-          (name.includes("discount") || name.includes("dispute") || name.includes("business_rules"))
-        ) {
-          result = await handleMiscTool(name, args, this.client);
         } else if (
           name.startsWith("tiendanube_") &&
           name.includes("checkout") &&
           !name.includes("abandoned_checkout")
         ) {
           result = await handleCheckoutTool(name, args, this.client);
-        } else if (
-          name.startsWith("tiendanube_") &&
-          name.includes("cart")
-        ) {
-          result = await handleCartTool(name, args, this.client);
         } else if (
           name.startsWith("tiendanube_") &&
           name.includes("abandoned_checkout")
@@ -313,4 +273,3 @@ server.run().catch((error) => {
   console.error("Failed to run server:", error);
   process.exit(1);
 });
-

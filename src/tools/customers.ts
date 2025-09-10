@@ -97,6 +97,14 @@ export const customerTools: Tool[] = [
           type: "string",
           description: "Customer email address (required)",
         },
+        password: {
+          type: "string",
+          description: "Customer password. If not provided, an invitation email will be sent.",
+        },
+        send_invitation: {
+          type: "boolean",
+          description: "Send an invitation email to the customer to create a password.",
+        },
         phone: {
           type: "string",
           description: "Customer phone number",
@@ -160,6 +168,10 @@ export const customerTools: Tool[] = [
           type: "string",
           description: "Customer email address",
         },
+        password: {
+          type: "string",
+          description: "Customer password.",
+        },
         phone: {
           type: "string",
           description: "Customer phone number",
@@ -171,6 +183,34 @@ export const customerTools: Tool[] = [
         note: {
           type: "string",
           description: "Internal notes about the customer",
+        },
+        address: {
+          type: "string",
+          description: "Customer address street",
+        },
+        city: {
+          type: "string",
+          description: "Customer city",
+        },
+        province: {
+          type: "string",
+          description: "Customer province/state",
+        },
+        country: {
+          type: "string",
+          description: "Customer country",
+        },
+        zipcode: {
+          type: "string",
+          description: "Customer ZIP/postal code",
+        },
+        number: {
+          type: "string",
+          description: "Address number",
+        },
+        floor: {
+          type: "string",
+          description: "Address floor/apartment",
         },
       },
       required: ["customer_id"],
@@ -216,19 +256,29 @@ export async function handleCustomerTool(
   try {
     switch (name) {
       case "tiendanube_list_customers": {
-        const validatedArgs = ListCustomersSchema.parse(args);
-        const response = await client.get("/customers", {
-          params: validatedArgs,
+        const validatedArgs = ListCustomersSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
         });
+        const response = await client.get("/customers", params);
         return response.data;
       }
 
       case "tiendanube_get_customer": {
         const validatedArgs = GetCustomerSchema.parse(args);
         const { customer_id, ...params } = validatedArgs;
-        const response = await client.get(`/customers/${customer_id}`, {
-          params,
-        });
+        const response = await client.get(`/customers/${customer_id}`, params);
         return response.data;
       }
 
@@ -239,6 +289,8 @@ export async function handleCustomerTool(
         const customerData: any = {
           name: validatedArgs.name,
           email: validatedArgs.email,
+          password: validatedArgs.password,
+          send_invitation: validatedArgs.send_invitation,
           phone: validatedArgs.phone,
           identification: validatedArgs.identification,
           note: validatedArgs.note,
@@ -278,9 +330,37 @@ export async function handleCustomerTool(
         const validatedArgs = UpdateCustomerSchema.parse(args);
         const { customer_id, ...updateData } = validatedArgs;
 
+        const customerData: any = { ...updateData };
+
+        // Add address if provided
+        const addressFields = [
+          "address",
+          "city",
+          "province",
+          "country",
+          "zipcode",
+          "number",
+          "floor",
+        ];
+        if (addressFields.some((field) => (validatedArgs as any)[field])) {
+          customerData.addresses = [
+            {
+              address: validatedArgs.address || "",
+              city: validatedArgs.city || "",
+              province: validatedArgs.province || "",
+              country: validatedArgs.country || "",
+              zipcode: validatedArgs.zipcode || "",
+              number: validatedArgs.number || "",
+              floor: validatedArgs.floor || "",
+              name: validatedArgs.name,
+              phone: validatedArgs.phone || "",
+            },
+          ];
+        }
+
         const response = await client.put(
           `/customers/${customer_id}`,
-          updateData
+          customerData
         );
         return response.data;
       }
@@ -295,9 +375,7 @@ export async function handleCustomerTool(
 
       case "tiendanube_search_customers": {
         const validatedArgs = SearchCustomersSchema.parse(args);
-        const response = await client.get("/customers", {
-          params: validatedArgs,
-        });
+        const response = await client.get("/customers", validatedArgs);
         return response.data;
       }
 

@@ -6,6 +6,8 @@ import {
   CreateCategorySchema,
   UpdateCategorySchema,
   DeleteCategorySchema,
+  GetCategoryCustomFieldsSchema,
+  UpdateCategoryCustomFieldsSchema,
   ListCouponsSchema,
   GetCouponSchema,
   CreateCouponSchema,
@@ -75,6 +77,42 @@ export const categoryTools: Tool[] = [
           description: "Filter by maximum update date (ISO 8601)",
         },
       },
+    },
+  },
+  {
+    name: "tiendanube_get_category_custom_fields",
+    description:
+      "GET CATEGORY CUSTOM FIELDS - Retrieve all custom fields for a category.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category_id: { type: "number", description: "Category ID" },
+      },
+      required: ["category_id"],
+    },
+  },
+  {
+    name: "tiendanube_update_category_custom_fields",
+    description:
+      "UPDATE CATEGORY CUSTOM FIELDS - Replace or set custom fields for a category.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category_id: { type: "number", description: "Category ID" },
+        custom_fields: {
+          type: "object",
+          description: "Key-value pairs of custom fields",
+          additionalProperties: {
+            anyOf: [
+              { type: "string" },
+              { type: "number" },
+              { type: "boolean" },
+              { type: "null" },
+            ],
+          },
+        },
+      },
+      required: ["category_id", "custom_fields"],
     },
   },
   {
@@ -243,7 +281,7 @@ export const couponTools: Tool[] = [
         type: {
           type: "string",
           description: "Filter by coupon type",
-          enum: ["percentage", "absolute"],
+          enum: ["percentage", "absolute", "shipping"],
         },
         valid: {
           type: "boolean",
@@ -301,7 +339,7 @@ export const couponTools: Tool[] = [
         type: {
           type: "string",
           description: "Discount type (required)",
-          enum: ["percentage", "absolute"],
+          enum: ["percentage", "absolute", "shipping"],
         },
         value: {
           type: "string",
@@ -364,7 +402,7 @@ export const couponTools: Tool[] = [
         type: {
           type: "string",
           description: "Discount type",
-          enum: ["percentage", "absolute"],
+          enum: ["percentage", "absolute", "shipping"],
         },
         value: {
           type: "string",
@@ -437,19 +475,46 @@ export async function handleCategoryTool(
   try {
     switch (name) {
       case "tiendanube_list_categories": {
-        const validatedArgs = ListCategoriesSchema.parse(args);
-        const response = await client.get("/categories", {
-          params: validatedArgs,
+        // Allow calling without arguments by defaulting to an empty object
+        const validatedArgs = ListCategoriesSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
         });
+        const response = await client.get("/categories", params);
+        return response.data;
+      }
+
+      case "tiendanube_get_category_custom_fields": {
+        const { category_id } = GetCategoryCustomFieldsSchema.parse(args);
+        const response = await client.get(`/categories/${category_id}/custom_fields`);
+        return response.data;
+      }
+
+      case "tiendanube_update_category_custom_fields": {
+        const { category_id, custom_fields } =
+          UpdateCategoryCustomFieldsSchema.parse(args);
+        const response = await client.put(
+          `/categories/${category_id}/custom_fields`,
+          custom_fields
+        );
         return response.data;
       }
 
       case "tiendanube_get_category": {
         const validatedArgs = GetCategorySchema.parse(args);
         const { category_id, ...params } = validatedArgs;
-        const response = await client.get(`/categories/${category_id}`, {
-          params,
-        });
+        const response = await client.get(`/categories/${category_id}`, params);
         return response.data;
       }
 
@@ -560,30 +625,57 @@ export async function handleCouponTool(
   try {
     switch (name) {
       case "tiendanube_list_coupons": {
-        const validatedArgs = ListCouponsSchema.parse(args);
-        const response = await client.get("/coupons", {
-          params: validatedArgs,
+        const validatedArgs = ListCouponsSchema.parse(args ?? {});
+        const normalize = (v: any) => {
+          if (typeof v !== "string") return v;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? v : d.toISOString();
+        };
+        const params: any = { ...validatedArgs };
+        [
+          "created_at_min",
+          "created_at_max",
+          "updated_at_min",
+          "updated_at_max",
+        ].forEach((k) => {
+          if (params[k]) params[k] = normalize(params[k]);
         });
+        const response = await client.get("/coupons", params);
         return response.data;
       }
 
       case "tiendanube_get_coupon": {
         const validatedArgs = GetCouponSchema.parse(args);
         const { coupon_id, ...params } = validatedArgs;
-        const response = await client.get(`/coupons/${coupon_id}`, { params });
+        const response = await client.get(`/coupons/${coupon_id}`, params);
         return response.data;
       }
 
       case "tiendanube_create_coupon": {
         const validatedArgs = CreateCouponSchema.parse(args);
-        const response = await client.post("/coupons", validatedArgs);
+        const { categories, products, ...rest } = validatedArgs as any;
+        const payload: any = { ...rest };
+        if (categories) {
+          payload.categories = categories.map((id: number) => ({ id }));
+        }
+        if (products) {
+          payload.products = products.map((id: number) => ({ id }));
+        }
+        const response = await client.post("/coupons", payload);
         return response.data;
       }
 
       case "tiendanube_update_coupon": {
         const validatedArgs = UpdateCouponSchema.parse(args);
-        const { coupon_id, ...updateData } = validatedArgs;
-        const response = await client.put(`/coupons/${coupon_id}`, updateData);
+        const { coupon_id, categories, products, ...rest } = validatedArgs as any;
+        const payload: any = { ...rest };
+        if (categories) {
+          payload.categories = categories.map((id: number) => ({ id }));
+        }
+        if (products) {
+          payload.products = products.map((id: number) => ({ id }));
+        }
+        const response = await client.put(`/coupons/${coupon_id}`, payload);
         return response.data;
       }
 
