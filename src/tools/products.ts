@@ -16,12 +16,6 @@ import {
   CreateProductImageSchema,
   UpdateProductImageSchema,
   DeleteProductImageSchema,
-  GetProductCustomFieldsSchema,
-  UpdateProductCustomFieldsSchema,
-  GetProductVariantCustomFieldsSchema,
-  UpdateProductVariantCustomFieldsSchema,
-  GetProductBySkuSchema,
-  UpdateStockAndPriceSchema,
 } from "../schemas/mcp-tools.js";
 
 /**
@@ -145,80 +139,6 @@ export const productTools: Tool[] = [
           ],
         },
       },
-    },
-  },
-  {
-    name: "tiendanube_get_product_custom_fields",
-    description:
-      "GET PRODUCT CUSTOM FIELDS - Retrieve all custom fields for a specific product by ID.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product_id: { type: "number", description: "Product ID" },
-      },
-      required: ["product_id"],
-    },
-  },
-  {
-    name: "tiendanube_update_product_custom_fields",
-    description:
-      "UPDATE PRODUCT CUSTOM FIELDS - Replace or set custom fields for a product.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product_id: { type: "number", description: "Product ID" },
-        custom_fields: {
-          type: "object",
-          description: "Key-value pairs of custom fields",
-          additionalProperties: {
-            anyOf: [
-              { type: "string" },
-              { type: "number" },
-              { type: "boolean" },
-              { type: "null" },
-            ],
-          },
-        },
-      },
-      required: ["product_id", "custom_fields"],
-    },
-  },
-  {
-    name: "tiendanube_get_product_variant_custom_fields",
-    description:
-      "GET VARIANT CUSTOM FIELDS - Retrieve all custom fields for a specific product variant.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product_id: { type: "number", description: "Product ID" },
-        variant_id: { type: "number", description: "Variant ID" },
-      },
-      required: ["product_id", "variant_id"],
-    },
-  },
-  {
-    name: "tiendanube_update_product_variant_custom_fields",
-    description:
-      "UPDATE VARIANT CUSTOM FIELDS - Replace or set custom fields for a product variant.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product_id: { type: "number", description: "Product ID" },
-        variant_id: { type: "number", description: "Variant ID" },
-        custom_fields: {
-          type: "object",
-          description: "Key-value pairs of custom fields",
-          additionalProperties: {
-            anyOf: [
-              { type: "string" },
-              { type: "number" },
-              { type: "boolean" },
-              { type: "null" },
-            ],
-          },
-        },
-      },
-      required: ["product_id", "variant_id", "custom_fields"],
     },
   },
   {
@@ -361,40 +281,6 @@ export const productTools: Tool[] = [
         },
       },
       required: ["product_id"],
-    },
-  },
-  {
-    name: "tiendanube_get_product_by_sku",
-    description: "Get a product by its SKU.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        sku: { type: "string", description: "Product SKU" },
-      },
-      required: ["sku"],
-    },
-  },
-  {
-    name: "tiendanube_update_stock_and_price",
-    description: "Update the stock or price of multiple products and variants.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        products: {
-          type: "array",
-          description: "List of products to update",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "number", description: "Product or Variant ID" },
-              price: { type: "string", description: "New price" },
-              stock: { type: "number", description: "New stock" },
-            },
-            required: ["id"],
-          },
-        },
-      },
-      required: ["products"],
     },
   },
   {
@@ -691,77 +577,20 @@ export async function handleProductTool(
 ): Promise<any> {
   try {
     switch (name) {
-      case "tiendanube_get_product_custom_fields": {
-        const { product_id } = GetProductCustomFieldsSchema.parse(args);
-        const response = await client.get(`/products/${product_id}/custom_fields`);
-        return response.data;
-      }
-
-      case "tiendanube_update_product_custom_fields": {
-        const { product_id, custom_fields } =
-          UpdateProductCustomFieldsSchema.parse(args);
-        const response = await client.put(
-          `/products/${product_id}/custom_fields`,
-          custom_fields
-        );
-        return response.data;
-      }
-
-      case "tiendanube_get_product_variant_custom_fields": {
-        const { product_id, variant_id } =
-          GetProductVariantCustomFieldsSchema.parse(args);
-        const response = await client.get(
-          `/products/${product_id}/variants/${variant_id}/custom_fields`
-        );
-        return response.data;
-      }
-
-      case "tiendanube_update_product_variant_custom_fields": {
-        const { product_id, variant_id, custom_fields } =
-          UpdateProductVariantCustomFieldsSchema.parse(args);
-        const response = await client.put(
-          `/products/${product_id}/variants/${variant_id}/custom_fields`,
-          custom_fields
-        );
-        return response.data;
-      }
       case "tiendanube_list_products": {
-        const validatedArgs = ListProductsSchema.parse(args ?? {});
-        // Normalize date filters to RFC3339
-        const normalize = (v: any) => {
-          if (typeof v !== "string") return v;
-          const d = new Date(v);
-          return isNaN(d.getTime()) ? v : d.toISOString();
-        };
-        const params: any = { ...validatedArgs };
-        [
-          "created_at_min",
-          "created_at_max",
-          "updated_at_min",
-          "updated_at_max",
-        ].forEach((k) => {
-          if (params[k]) params[k] = normalize(params[k]);
+        const validatedArgs = ListProductsSchema.parse(args);
+        const response = await client.get("/products", {
+          params: validatedArgs,
         });
-        const response = await client.get("/products", params);
         return response.data;
       }
 
       case "tiendanube_get_product": {
         const validatedArgs = GetProductSchema.parse(args);
         const { product_id, ...params } = validatedArgs;
-        const response = await client.get(`/products/${product_id}`, params);
-        return response.data;
-      }
-
-      case "tiendanube_get_product_by_sku": {
-        const { sku } = GetProductBySkuSchema.parse(args);
-        const response = await client.get(`/products/sku/${sku}`);
-        return response.data;
-      }
-
-      case "tiendanube_update_stock_and_price": {
-        const { products } = UpdateStockAndPriceSchema.parse(args);
-        const response = await client.patch("/products/stock-price", { products });
+        const response = await client.get(`/products/${product_id}`, {
+          params,
+        });
         return response.data;
       }
 
@@ -786,8 +615,8 @@ export async function handleProductTool(
               cost: validatedArgs.cost || null,
             },
           ],
-          published: validatedArgs.published ?? true,
-          free_shipping: validatedArgs.free_shipping ?? false,
+          published: validatedArgs.published || true,
+          free_shipping: validatedArgs.free_shipping || false,
           requires_shipping: validatedArgs.requires_shipping !== false,
           brand: validatedArgs.brand || null,
           video_url: validatedArgs.video_url || null,
@@ -915,7 +744,9 @@ export async function handleProductTool(
 
       case "tiendanube_search_products": {
         const validatedArgs = SearchProductsSchema.parse(args);
-        const response = await client.get("/products", validatedArgs);
+        const response = await client.get("/products", {
+          params: validatedArgs,
+        });
         return response.data;
       }
 

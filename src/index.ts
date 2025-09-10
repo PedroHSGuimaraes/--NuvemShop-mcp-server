@@ -36,6 +36,22 @@ import {
   handleCategoryTool,
   handleCouponTool,
 } from "./tools/categories-coupons.js";
+import { 
+  productCustomFieldsTools, 
+  handleProductCustomFieldsTool 
+} from "./tools/product-custom-fields.js";
+import { 
+  transactionTools, 
+  handleTransactionTool 
+} from "./tools/transactions.js";
+import { 
+  fulfillmentOrderTools, 
+  handleFulfillmentOrderTool 
+} from "./tools/fulfillment-orders.js";
+import { 
+  businessRulesTools, 
+  handleBusinessRulesTool 
+} from "./tools/business-rules.js";
 
 /**
  * Tienda Nube MCP Server
@@ -154,6 +170,10 @@ class TiendaNubeMCPServer {
       ...cartTools,
       ...checkoutTools,
       ...abandonedCheckoutTools,
+      ...productCustomFieldsTools,
+      ...transactionTools,
+      ...fulfillmentOrderTools,
+      ...businessRulesTools,
     ];
 
     // Handle list tools request
@@ -233,6 +253,26 @@ class TiendaNubeMCPServer {
           name.includes("abandoned_checkout")
         ) {
           result = await handleAbandonedCheckoutTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
+          (name.includes("product_custom_field") || name.includes("custom_field"))
+        ) {
+          result = await handleProductCustomFieldsTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
+          (name.includes("transaction") && !name.includes("order_transaction"))
+        ) {
+          result = await handleTransactionTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
+          name.includes("fulfillment_order")
+        ) {
+          result = await handleFulfillmentOrderTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
+          (name.includes("business_rule") || (name.includes("dispute") && !name.includes("discounts")))
+        ) {
+          result = await handleBusinessRulesTool(name, args, this.client);
         } else {
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }

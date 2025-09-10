@@ -18,6 +18,9 @@ import {
   GetOrderEditHistorySchema,
   ListDraftOrdersSchema,
   GetDraftOrderSchema,
+  CreateDraftOrderSchema,
+  ConfirmDraftOrderSchema,
+  DeleteDraftOrderSchema,
   GetFulfillmentOrderSchema,
   ListOrderTransactionsSchema,
   GetOrderTransactionSchema,
@@ -477,6 +480,80 @@ export const orderTools: Tool[] = [
     },
   },
   {
+    name: "tiendanube_create_draft_order",
+    description: "CREATE DRAFT ORDER - Create a new draft order (quote) with customer and product information.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        contact_name: { type: "string", description: "Customer first name" },
+        contact_lastname: { type: "string", description: "Customer last name" },
+        contact_email: { type: "string", description: "Customer email address" },
+        payment_status: { type: "string", enum: ["pending", "paid", "partially_paid"], description: "Payment status" },
+        products: {
+          type: "array",
+          items: {
+            type: "object", 
+            properties: {
+              variant_id: { type: "number", description: "Product variant ID" },
+              quantity: { type: "number", description: "Quantity" },
+              price: { type: "number", description: "Unit price" },
+            },
+            required: ["variant_id", "quantity"],
+          },
+          description: "Products to include in draft order",
+        },
+        shipping_address: {
+          type: "object",
+          properties: {
+            address: { type: "string" },
+            city: { type: "string" },
+            country: { type: "string" },
+            province: { type: "string" },
+            zipcode: { type: "string" },
+          },
+          description: "Shipping address information",
+        },
+        billing_address: {
+          type: "object", 
+          properties: {
+            address: { type: "string" },
+            city: { type: "string" },
+            country: { type: "string" },
+            province: { type: "string" },
+            zipcode: { type: "string" },
+          },
+          description: "Billing address information",
+        },
+        discount: { type: "number", description: "Discount amount" },
+        shipping_cost: { type: "number", description: "Shipping cost" },
+        note: { type: "string", description: "Order notes" },
+      },
+      required: ["contact_name", "contact_lastname", "contact_email", "payment_status", "products"],
+    },
+  },
+  {
+    name: "tiendanube_confirm_draft_order",
+    description: "CONFIRM DRAFT ORDER - Confirm a draft order and convert it to a regular order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        draft_order_id: { type: "number", description: "Draft order ID to confirm" },
+      },
+      required: ["draft_order_id"],
+    },
+  },
+  {
+    name: "tiendanube_delete_draft_order",
+    description: "DELETE DRAFT ORDER - Delete a specific draft order.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        draft_order_id: { type: "number", description: "Draft order ID to delete" },
+      },
+      required: ["draft_order_id"],
+    },
+  },
+  {
     name: "tiendanube_get_fulfillment_order",
     description:
       "GET FULFILLMENT ORDER - Retrieve a fulfillment order by its ID.",
@@ -756,6 +833,31 @@ export async function handleOrderTool(
         const { draft_order_id, ...params } = GetDraftOrderSchema.parse(args);
         const response = await client.get(`/draft_orders/${draft_order_id}`, params);
         return response.data;
+      }
+
+      case "tiendanube_create_draft_order": {
+        const validatedArgs = CreateDraftOrderSchema.parse(args);
+        const response = await client.post("/draft_orders", validatedArgs);
+        return response.data;
+      }
+
+      case "tiendanube_confirm_draft_order": {
+        const { draft_order_id } = ConfirmDraftOrderSchema.parse(args);
+        const response = await client.post(`/draft_orders/${draft_order_id}/confirm`);
+        return {
+          success: true,
+          message: `Draft order ${draft_order_id} confirmed successfully`,
+          order: response.data,
+        };
+      }
+
+      case "tiendanube_delete_draft_order": {
+        const { draft_order_id } = DeleteDraftOrderSchema.parse(args);
+        await client.delete(`/draft_orders/${draft_order_id}`);
+        return {
+          success: true,
+          message: `Draft order ${draft_order_id} deleted successfully`,
+        };
       }
 
       // Fulfillment order by ID

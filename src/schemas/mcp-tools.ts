@@ -977,6 +977,43 @@ export const GetDraftOrderSchema = z.object({
   fields: z.string().optional(),
 });
 
+export const CreateDraftOrderSchema = z.object({
+  contact_name: z.string().min(1),
+  contact_lastname: z.string().min(1), 
+  contact_email: z.string().email(),
+  payment_status: z.enum(["pending", "paid", "partially_paid"]),
+  products: z.array(z.object({
+    variant_id: z.number().int().positive(),
+    quantity: z.number().int().positive(),
+    price: z.number().positive().optional(),
+  })),
+  shipping_address: z.object({
+    address: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    province: z.string().optional(),
+    zipcode: z.string().optional(),
+  }).optional(),
+  billing_address: z.object({
+    address: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    province: z.string().optional(),
+    zipcode: z.string().optional(),
+  }).optional(),
+  discount: z.number().optional(),
+  shipping_cost: z.number().optional(),
+  note: z.string().optional(),
+});
+
+export const ConfirmDraftOrderSchema = z.object({
+  draft_order_id: z.number().int().positive(),
+});
+
+export const DeleteDraftOrderSchema = z.object({
+  draft_order_id: z.number().int().positive(),
+});
+
 // Fulfillment Order by ID
 export const GetFulfillmentOrderSchema = z.object({
   fulfillment_order_id: z.number().int().positive(),

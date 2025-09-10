@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "WebFetch(domain:dev.nuvemshop.com.br)",
+      "Bash(git tag:*)",
+      "Bash(git checkout:*)",
+      "Bash(git show:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm version:*)",
+      "Bash(npm whoami:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(npm publish:*)",
+      "Bash(git stash:*)",
+      "Bash(npm link:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:tiendanube.github.io)",
+      "Bash(npm run dev:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

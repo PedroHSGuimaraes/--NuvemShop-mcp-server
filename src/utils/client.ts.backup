@@ -16,14 +16,17 @@ export class TiendaNubeClient {
     };
 
     const userAgent =
-      process.env["TIENDANUBE_USER_AGENT"] || "Vintag (pedroguimaraes@hiasmarketing.com)";
+      process.env["TIENDANUBE_USER_AGENT"] || "TiendaNube-MCP-Server/1.5.0";
 
     this.client = axios.create({
       baseURL: `${this.config.baseUrl}/${this.config.storeId}`,
       timeout: 30000,
       headers: {
-        // Exact format that works with curl
+        // Primary header required by Tienda Nube
         Authentication: `bearer ${this.config.accessToken}`,
+        // Fallback for environments expecting Authorization
+        Authorization: `bearer ${this.config.accessToken}`,
+        "Content-Type": "application/json",
         "User-Agent": userAgent,
       },
     });
@@ -264,6 +267,8 @@ export class TiendaNubeClient {
 
     if (newConfig.accessToken) {
       this.client.defaults.headers["Authentication"] =
+        `bearer ${newConfig.accessToken}`;
+      this.client.defaults.headers["Authorization"] =
         `bearer ${newConfig.accessToken}`;
     }
 
