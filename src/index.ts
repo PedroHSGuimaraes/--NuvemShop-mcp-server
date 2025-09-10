@@ -172,10 +172,10 @@ class TiendaNubeMCPServer {
 
         // Route to appropriate handler based on tool name prefix
         if (
-          name.startsWith("tiendanube_") &&
-          (name.includes("store") ||
-            name === "tiendanube_list_payment_providers" ||
-            name === "tiendanube_list_shipping_providers")
+          name === "tiendanube_get_store_info" ||
+          name === "tiendanube_list_payment_providers" ||
+          name === "tiendanube_list_shipping_providers" ||
+          name === "tiendanube_get_store_settings"
         ) {
           result = await handleAuthenticationTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("product")) {
