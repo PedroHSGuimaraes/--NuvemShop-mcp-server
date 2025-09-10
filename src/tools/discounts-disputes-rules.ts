@@ -1,12 +1,6 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { TiendaNubeClient } from "../utils/client.js";
-import {
-  ListDiscountsSchema,
-  GetDiscountSchema,
-  ListDisputesSchema,
-  GetDisputeSchema,
-  GetBusinessRulesSchema,
-} from "../schemas/mcp-tools.js";
+import { ListDiscountsSchema, GetDiscountSchema } from "../schemas/mcp-tools.js";
 
 export const miscTools: Tool[] = [
   {
@@ -33,38 +27,6 @@ export const miscTools: Tool[] = [
       required: ["discount_id"],
     },
   },
-  {
-    name: "tiendanube_list_disputes",
-    description: "LIST DISPUTES - Retrieve disputes (read-only).",
-    inputSchema: {
-      type: "object",
-      properties: {
-        page: { type: "number" },
-        per_page: { type: "number" },
-        fields: { type: "string" },
-        since_id: { type: "number" },
-      },
-    },
-  },
-  {
-    name: "tiendanube_get_dispute",
-    description: "GET DISPUTE - Retrieve a dispute by ID.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        dispute_id: { type: "number" },
-      },
-      required: ["dispute_id"],
-    },
-  },
-  {
-    name: "tiendanube_get_business_rules",
-    description: "GET BUSINESS RULES - Retrieve store business rules.",
-    inputSchema: {
-      type: "object",
-      properties: {},
-    },
-  },
 ];
 
 export async function handleMiscTool(
@@ -84,21 +46,6 @@ export async function handleMiscTool(
         const response = await client.get(`/discounts/${discount_id}`);
         return response.data;
       }
-      case "tiendanube_list_disputes": {
-        const validatedArgs = ListDisputesSchema.parse(args ?? {});
-        const response = await client.get("/disputes", validatedArgs);
-        return response.data;
-      }
-      case "tiendanube_get_dispute": {
-        const { dispute_id } = GetDisputeSchema.parse(args);
-        const response = await client.get(`/disputes/${dispute_id}`);
-        return response.data;
-      }
-      case "tiendanube_get_business_rules": {
-        GetBusinessRulesSchema.parse(args ?? {});
-        const response = await client.get("/business_rules");
-        return response.data;
-      }
       default:
         throw new Error(`Unknown misc tool: ${name}`);
     }
@@ -109,4 +56,3 @@ export async function handleMiscTool(
     throw error;
   }
 }
-

@@ -30,16 +30,21 @@ import {
 } from "./tools/abandoned-checkouts.js";
 import { cartTools, handleCartTool } from "./tools/cart.js";
 import { checkoutTools, handleCheckoutTool } from "./tools/checkouts.js";
+import { checkoutSdkTools, handleCheckoutSdkTool } from "./tools/checkout-sdk.js";
 import {
   categoryTools,
   couponTools,
   handleCategoryTool,
   handleCouponTool,
 } from "./tools/categories-coupons.js";
-import { 
-  productCustomFieldsTools, 
-  handleProductCustomFieldsTool 
-} from "./tools/product-custom-fields.js";
+  import { 
+    productCustomFieldsTools, 
+    handleProductCustomFieldsTool 
+  } from "./tools/product-custom-fields.js";
+  import {
+    productVariantCustomFieldsTools,
+    handleProductVariantCustomFieldsTool,
+  } from "./tools/product-variant-custom-fields.js";
 import { 
   transactionTools, 
   handleTransactionTool 
@@ -86,7 +91,7 @@ class TiendaNubeMCPServer {
   constructor() {
     this.server = new Server({
       name: "tiendanube-mcp-server",
-      version: "1.5.0",
+      version: "1.17.0",
     });
 
     // Read credentials from environment variables
@@ -169,8 +174,10 @@ class TiendaNubeMCPServer {
       ...miscTools,
       ...cartTools,
       ...checkoutTools,
+      ...checkoutSdkTools,
       ...abandonedCheckoutTools,
       ...productCustomFieldsTools,
+      ...productVariantCustomFieldsTools,
       ...transactionTools,
       ...fulfillmentOrderTools,
       ...businessRulesTools,
@@ -198,7 +205,11 @@ class TiendaNubeMCPServer {
           name === "tiendanube_get_store_settings"
         ) {
           result = await handleAuthenticationTool(name, args, this.client);
-        } else if (name.startsWith("tiendanube_") && name.includes("product")) {
+        } else if (
+          name.startsWith("tiendanube_") &&
+          name.includes("product") &&
+          !name.includes("custom_field")
+        ) {
           result = await handleProductTool(name, args, this.client);
         } else if (name.startsWith("tiendanube_") && name.includes("order")) {
           result = await handleOrderTool(name, args, this.client);
@@ -234,13 +245,19 @@ class TiendaNubeMCPServer {
           result = await handleShippingTool(name, args, this.client);
         } else if (
           name.startsWith("tiendanube_") &&
-          (name.includes("discount") || name.includes("dispute") || name.includes("business_rules"))
+          name.includes("discount")
         ) {
           result = await handleMiscTool(name, args, this.client);
         } else if (
           name.startsWith("tiendanube_") &&
+          name.includes("checkout_sdk")
+        ) {
+          result = await handleCheckoutSdkTool(name, args, this.client);
+        } else if (
+          name.startsWith("tiendanube_") &&
           name.includes("checkout") &&
-          !name.includes("abandoned_checkout")
+          !name.includes("abandoned_checkout") &&
+          !name.includes("checkout_sdk")
         ) {
           result = await handleCheckoutTool(name, args, this.client);
         } else if (
@@ -255,7 +272,24 @@ class TiendaNubeMCPServer {
           result = await handleAbandonedCheckoutTool(name, args, this.client);
         } else if (
           name.startsWith("tiendanube_") &&
-          (name.includes("product_custom_field") || name.includes("custom_field"))
+          (
+            name.includes("variant_custom_field") ||
+            name.includes("product_variant_custom_field") ||
+            name.includes("variant") && name.includes("custom_field")
+          )
+        ) {
+          // Route variant custom field tools first to avoid collision with generic custom_field rules
+          result = await handleProductVariantCustomFieldsTool(
+            name,
+            args,
+            this.client
+          );
+        } else if (
+          name.startsWith("tiendanube_") &&
+          (
+            name.includes("product_custom_field") ||
+            (name.includes("custom_field") && !name.includes("variant"))
+          )
         ) {
           result = await handleProductCustomFieldsTool(name, args, this.client);
         } else if (
